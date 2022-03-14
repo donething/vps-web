@@ -1,26 +1,21 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {useEffect} from 'react'
+import {Link} from "react-router-dom"
+import {Button, Stack} from "@mui/material"
 
+// 首页
 function App() {
+  useEffect(() => {
+    document.title = "首页"
+  })
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <Stack direction={"column"} alignItems={"center"} gap={4}
+           sx={{width: "100%", height: "100%", bgcolor: "background.paper", paddingTop: 10}}>
+      <Link to={"music"}><Button>Music</Button></Link>
+      <Link to={"fserver"}><Button>FServer</Button></Link>
+      <Link to={"settings"}><Button>Settings</Button></Link>
+    </Stack>
+  )
 }
 
-export default App;
+export default App
