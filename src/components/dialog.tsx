@@ -32,6 +32,7 @@ class DialogMsg {
 // 共享 Dialog
 export const useDialog = () => {
   const [dialogMsg, setDialogMsg] = useState(new DialogMsg())
+
   return {dialogMsg, setDialogMsg}
 }
 

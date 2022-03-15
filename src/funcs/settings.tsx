@@ -1,6 +1,6 @@
 // 文件操作验证码存储到 localStorage 的键
 import {useEffect, useState} from "react"
-import {Box, Button, FormControl, InputLabel, OutlinedInput} from "@mui/material"
+import {Button, FormControl, InputLabel, OutlinedInput, Stack} from "@mui/material"
 import {useBetween} from "use-between"
 import {useSnackbar} from "../components/snackbar"
 
@@ -27,7 +27,7 @@ const Settings = (): JSX.Element => {
   }, [])
 
   return (
-    <Box className="col" sx={{bgcolor: "background.paper", padding: "16px", gap: "15px"}}>
+    <Stack className={"main"} sx={{bgcolor: "background.paper", gap: 2}}>
       <FormControl fullWidth size="small">
         <InputLabel htmlFor="ss_auth">Auth 授权码</InputLabel>
         <OutlinedInput
@@ -61,7 +61,7 @@ const Settings = (): JSX.Element => {
           severity: "success"
         }))
       }}>保存</Button>
-    </Box>
+    </Stack>
   )
 }
 

@@ -26,7 +26,7 @@ export const useSnackbar = () => {
 }
 
 // 自定义 Snackbar 组件
-export const SnackbarComp = (props: { sx?: SxProps }) => {
+const SnackbarComp = (props: { sx?: SxProps }) => {
   const {sbMsg, setSbMsg} = useBetween(useSnackbar)
 
   return (
@@ -46,3 +46,5 @@ export const SnackbarComp = (props: { sx?: SxProps }) => {
     </Snackbar>
   )
 }
+
+export default SnackbarComp

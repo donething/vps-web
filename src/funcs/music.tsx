@@ -1,11 +1,10 @@
 import {
   Alert,
-  Autocomplete,
-  Box, Checkbox, Divider, FormControlLabel,
+  Autocomplete, Checkbox, Divider, FormControlLabel,
   FormGroup,
   IconButton,
   ListItem,
-  ListItemText,
+  ListItemText, Stack,
   SxProps,
   TextField
 } from "@mui/material"
@@ -63,7 +62,6 @@ const TAG = "[Music]"
 
 // 存储搜索历史的键
 const LS_HIST_KEY = "history_words"
-const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
 
 // 共享歌曲的搜索结果，以便展示
 const useSongList = () => {
@@ -100,6 +98,8 @@ const Header = (props: { sx?: SxProps }) => {
       if (!kw) return
       // 搜索
       console.log(TAG, `搜索歌曲"${kw}"，第 ${page} 页`)
+      // 授权验证码
+      const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
       let resp = await request("/api/music/search?page=" + page + "&keyword=" + encodeURIComponent(kw) +
         "&ops=" + encodeURIComponent(JSON.stringify(ops)), undefined, {headers: headers})
       let obj: SMResp = await resp.json().catch(e => console.log(TAG, "搜索歌曲出错：", e))
@@ -155,7 +155,7 @@ const Header = (props: { sx?: SxProps }) => {
   }, [kw, page])
 
   return (
-    <Box sx={{...props.sx}}>
+    <Stack sx={{...props.sx}}>
       <Autocomplete size="small" disablePortal freeSolo options={historyWords} renderInput={params =>
         <TextField {...params} label="搜索 歌曲、歌手、歌单、专辑" onKeyDown={async e => {
           let keyword = (e.target as HTMLInputElement).value.trim()
@@ -224,7 +224,7 @@ const Header = (props: { sx?: SxProps }) => {
         />
       </FormGroup>
       <Divider component={"li"}/>
-    </Box>
+    </Stack>
   )
 }
 
@@ -269,10 +269,10 @@ const Music = () => {
   })
 
   return (
-    <Box className="col" sx={{bgcolor: "background.paper", height: "100vh", overflowY: "hidden"}}>
-      <Header sx={{padding: "16px 16px 0px 16px"}}/>
+    <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100vh", overflowY: "hidden"}}>
+      <Header/>
       <Content/>
-    </Box>
+    </Stack>
   )
 }
 
