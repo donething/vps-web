@@ -139,7 +139,7 @@ const FItem = (props: { file: FileInfo }) => {
           setSbMsg(prev => ({
             ...prev,
             open: true,
-            message: `文件删除成功："${props.file.name}"}`,
+            message: `文件删除成功："${props.file.name}"`,
             severity: "success"
           }))
         }
