@@ -44,3 +44,12 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## 下载完本工程后
+
+1. 复制到本地后，先删除工程下的`.git`文件夹
+2. 编辑`package.json`文件，修改工程名`name`属性，再退出编辑软件，修改工程所在的文件夹名
+3. 进入工程目录，执行`yarn`命令来下载依赖
+
+## 后端服务
+[donething/vps-go: 管理 vps](https://github.com/donething/vps-go)

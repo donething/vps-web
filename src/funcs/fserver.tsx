@@ -10,7 +10,7 @@ import {
   ListItemAvatar, ListItemButton,
   ListItemText,
   Menu,
-  MenuItem,
+  MenuItem, Paper,
   Stack,
   SvgIcon,
   SxProps,
@@ -81,27 +81,27 @@ const Menus = () => {
   }
 
   return (
-    <div>
+    <Fragment>
       <Button color={"inherit"} onClick={handleClick}>菜单</Button>
 
       <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handleClose}>
-        <MenuItem sx={{gap: 1}} onClick={() => handleClose("Nginx")}>
+        <MenuItem sx={{gap: 2, color: "#555"}} onClick={() => handleClose("Nginx")}>
           <SvgIcon component={IconNginx} viewBox="0 0 1024 1024"/>打开 Nginx目录
         </MenuItem>
-        <MenuItem sx={{gap: 1}} onClick={() => handleClose("DL_Link")}>
+        <MenuItem sx={{gap: 2, color: "#555"}} onClick={() => handleClose("DL_Link")}>
           <SvgIcon component={IconLink} viewBox="0 0 1024 1024"/> 下载 普通链接
         </MenuItem>
-        <MenuItem sx={{gap: 1}} onClick={() => handleClose("DL_Magnet")}>
+        <MenuItem sx={{gap: 2, color: "#555"}} onClick={() => handleClose("DL_Magnet")}>
           <SvgIcon component={IconMagnet} viewBox="0 0 1024 1024"/> 下载 磁力链接
         </MenuItem>
-        <MenuItem sx={{gap: 1}} onClick={() => handleClose("UP_FILES")}>
+        <MenuItem sx={{gap: 2, color: "#555"}} onClick={() => handleClose("UP_FILES")}>
           <FileUploadOutlinedIcon/> 上传 文件
         </MenuItem>
-        <MenuItem sx={{gap: 1}} onClick={() => handleClose("UD_Progress")}>
+        <MenuItem sx={{gap: 2, color: "#555"}} onClick={() => handleClose("UD_Progress")}>
           <CloudSyncOutlinedIcon/> 上传、下载 的进度
         </MenuItem>
       </Menu>
-    </div>
+    </Fragment>
   )
 }
 

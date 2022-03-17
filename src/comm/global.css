@@ -14,7 +14,7 @@ code {
 
 /* 设置元素 width/height 包含边框和内边距的宽/高度 */
 * {
-  box-sizing: border-box;
+  /*box-sizing: border-box;*/
 }
 
 /* 链接 */
