@@ -10,7 +10,7 @@ import {
   ListItemAvatar, ListItemButton,
   ListItemText,
   Menu,
-  MenuItem, Paper,
+  MenuItem,
   Stack,
   SvgIcon,
   SxProps,
@@ -82,7 +82,7 @@ const Menus = () => {
 
   return (
     <Fragment>
-      <Button color={"inherit"} onClick={handleClick}>菜单</Button>
+      <Button color={"secondary"} onClick={handleClick}>菜单</Button>
 
       <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handleClose}>
         <MenuItem sx={{gap: 2, color: "#555"}} onClick={() => handleClose("Nginx")}>
@@ -204,7 +204,7 @@ const FItem = (props: { file: FileInfo }) => {
   const {setDialogMsg} = useBetween(useDialog)
 
   return (
-    <ListItem divider>
+    <ListItem divider sx={{paddingLeft: 0, paddingRight: 0}}>
       <ListItemButton onClick={() => props.file.is_dir ?
         setPaths(prev => [...prev, props.file.name]) :
         onDownloadFile(props.file.name, `${paths.join("/")}/${props.file.name}`)
@@ -213,9 +213,10 @@ const FItem = (props: { file: FileInfo }) => {
           <Avatar>{props.file.is_dir ? <FolderOutlinedIcon/> : <FileOutlinedIcon/>}</Avatar>
         </ListItemAvatar>
 
-        <ListItemText primary={props.file.name} secondary={<span className={"row"} style={{gap: "16px"}}>
-                        <span>{props.file.last}</span>
-          {!props.file.is_dir && <span>{props.file.size}</span>}</span>}
+        <ListItemText primary={props.file.name} sx={{wordBreak: "break-all"}} secondary={
+          <span className={"row"} style={{gap: "16px"}}><span>{props.file.last}</span>
+            {!props.file.is_dir && <span>{props.file.size}</span>}
+          </span>}
         />
       </ListItemButton>
 
