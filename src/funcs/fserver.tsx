@@ -302,6 +302,10 @@ const FServer = () => {
   // 共享文件上传状态
   const {setDrawerMsg} = useBetween(useDrawer)
 
+  useEffect(() => {
+    document.title = "文件管理"
+  }, [])
+
   return (
     <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%", overflowY: "hidden"}}>
       <Navbar/>
