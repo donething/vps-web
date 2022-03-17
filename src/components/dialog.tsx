@@ -11,7 +11,7 @@ import {
 } from "@mui/material"
 
 // 控制显示 Dialog
-class DialogMsg {
+export class DialogMsg {
   open: boolean = false                 // 必须
   title: string = ""                    // 必须
   message?: string = ""                 // message、content 至少要有一项

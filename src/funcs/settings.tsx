@@ -20,8 +20,6 @@ const Settings = (): JSX.Element => {
   const {setSbMsg} = useBetween(useSnackbar)
 
   useEffect(() => {
-    document.title = "设置"
-
     setAuth(localStorage.getItem(LS_AUTH_KEY) || "")
     setTrans(localStorage.getItem(LS_Trans_KEY) || "")
   }, [])

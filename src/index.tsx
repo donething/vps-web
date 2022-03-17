@@ -16,12 +16,18 @@ import SnackbarComp from "./components/snackbar"
 import DialogComp from "./components/dialog"
 import BackdropComp from "./components/backdrop"
 import Tasks from "./funcs/tasks"
-import {ThemeProvider} from "@mui/material"
+import {styled, ThemeProvider} from "@mui/material"
 import theme from "./mytheme"
+import AppbarComp from "./components/appbar"
+
+const Offset = styled("div")(({theme}) => theme.mixins.toolbar)
 
 ReactDOM.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
+      <AppbarComp/>
+      <Offset/>
+
       <HashRouter>
         <Routes>
           <Route path="/" element={<App/>}/>

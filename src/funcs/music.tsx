@@ -1,12 +1,11 @@
 import {
   Alert,
-  Autocomplete, Checkbox, Divider, FormControlLabel,
+  Checkbox, Divider, FormControlLabel,
   FormGroup,
   IconButton,
   ListItem,
   ListItemText, Stack,
   SxProps,
-  TextField
 } from "@mui/material"
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import PlayCircleOutlineOutlinedIcon from '@mui/icons-material/PlayCircleOutlineOutlined'
@@ -16,6 +15,13 @@ import {LS_AUTH_KEY} from "./settings"
 import {request} from "do-utils"
 import {useSnackbar} from "../components/snackbar"
 import ListInfinite from "../components/list_infinite"
+import AutocompleteComp from "./autocomplete"
+import {useBackdrop} from "../components/backdrop"
+
+// 标签
+const TAG = "[Music]"
+// 存储搜索历史的键
+const LS_HIST_KEY = "history_words"
 
 // 搜索歌曲时返回的结果
 interface SMResp {
@@ -58,11 +64,6 @@ class Ops {
   bestShow: number = 1
 }
 
-const TAG = "[Music]"
-
-// 存储搜索历史的键
-const LS_HIST_KEY = "history_words"
-
 // 共享歌曲的搜索结果，以便展示
 const useSongList = () => {
   const [page, setPage] = useState(1)
@@ -85,6 +86,43 @@ const Header = (props: { sx?: SxProps }) => {
   const {setSongList, setTotal, page, setPage} = useBetween(useSongList)
   // 共享 Snackbar
   const {setSbMsg} = useBetween(useSnackbar)
+  // 共享 Backdrop
+  const {setBackdropMsg} = useBetween(useBackdrop)
+
+  // 搜索
+  const onSearch = (keyword: string) => {
+    console.log(TAG, "预备搜索：", keyword)
+    if (!keyword.trim()) return
+
+    // 清楚之前的记录
+    setPage(1)
+    setSongList([])
+    setTotal(0)
+
+    // 重开新的搜索
+    setKw(keyword)
+
+    // 添加关键字到历史记录
+    let history: Array<string> = JSON.parse(localStorage.getItem(LS_HIST_KEY) || "[]")
+    let index = history.findIndex(value => value === keyword)
+    setHistoryWords(prev => {
+      // 若不存在记录则添加，若有则提到最前面。总记录不超过指定数，否则删除最晚一条记录
+      if (index === -1) {
+        let nItems = [keyword, ...prev]
+        if (prev.length === 30 + 1) {
+          nItems.pop()
+        }
+        localStorage.setItem(LS_HIST_KEY, JSON.stringify(nItems))
+        return nItems
+      } else {
+        let nItems = [...prev]
+        let dels = nItems.splice(index, 1)
+        nItems = [...dels, ...nItems]
+        localStorage.setItem(LS_HIST_KEY, JSON.stringify(nItems))
+        return nItems
+      }
+    })
+  }
 
   // 加载历史记录
   useEffect(() => {
@@ -98,6 +136,8 @@ const Header = (props: { sx?: SxProps }) => {
       if (!kw) return
       // 搜索
       console.log(TAG, `搜索歌曲"${kw}"，第 ${page} 页`)
+      setBackdropMsg(prev => ({...prev, bg: "transparent", open: true}))
+
       // 授权验证码
       const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
       let resp = await request("/api/music/search?page=" + page + "&keyword=" + encodeURIComponent(kw) +
@@ -107,6 +147,7 @@ const Header = (props: { sx?: SxProps }) => {
       // 获取失败
       if (!obj || obj.code !== 0) {
         console.log(TAG, "搜索歌曲失败：", obj?.msg || `服务端响应码 ${resp.status}`)
+        setBackdropMsg(prev => ({...prev, open: false}))
         setSbMsg(prev => ({
           ...prev,
           open: true,
@@ -121,6 +162,7 @@ const Header = (props: { sx?: SxProps }) => {
       // 没有搜到匹配的歌曲
       if (!obj.data.payload || obj.data.payload.length === 0) {
         console.log(TAG, "没有搜到匹配的歌曲")
+        setBackdropMsg(prev => ({...prev, open: false}))
         setSbMsg(prev => ({
           ...prev,
           open: true,
@@ -132,6 +174,8 @@ const Header = (props: { sx?: SxProps }) => {
 
       // 填充
       setSongList(prev => [...prev, ...obj.data.payload])
+
+      setBackdropMsg(prev => ({...prev, open: false}))
 
       // 设置总搜索结果数
       let tt = Number(obj.data.total)
@@ -156,40 +200,16 @@ const Header = (props: { sx?: SxProps }) => {
 
   return (
     <Stack sx={{...props.sx}}>
-      <Autocomplete size="small" disablePortal freeSolo options={historyWords} renderInput={params =>
-        <TextField {...params} label="搜索 歌曲、歌手、歌单、专辑" onKeyDown={async e => {
-          let keyword = (e.target as HTMLInputElement).value.trim()
-          // 按回车键开始搜索
-          if (e.code.toLowerCase() !== "enter" || !keyword) {
-            return
-          }
-
-          // 清楚之前的记录
-          setPage(1)
-          setSongList([])
-          setTotal(0)
-
-          // 重开新的搜索
-          setKw(keyword)
-
-          // 添加关键字到历史记录
-          let history: Array<string> = JSON.parse(localStorage.getItem(LS_HIST_KEY) || "[]")
-          let index = history.findIndex(value => value === keyword)
-          setHistoryWords(prev => {
-            if (index === -1) {
-              let nItems = [keyword, ...prev]
-              localStorage.setItem(LS_HIST_KEY, JSON.stringify(nItems))
-              return nItems
-            } else {
-              let nItems = [...prev]
-              let dels = nItems.splice(index, 1)
-              nItems = [...dels, ...nItems]
-              localStorage.setItem(LS_HIST_KEY, JSON.stringify(nItems))
-              return nItems
-            }
-          })
-        }}/>}
-      />
+      <AutocompleteComp label={"搜索 歌曲、歌手、歌单、专辑"} options={historyWords}
+                        onEnter={option => onSearch(option)}
+                        onDelOption={option => setHistoryWords(prev => {
+                          // 删除指定记录
+                          let his = [...prev]
+                          let index = his.findIndex((v: string) => v === option)
+                          index !== -1 && his.splice(index, 1)
+                          localStorage.setItem(LS_HIST_KEY, JSON.stringify(his))
+                          return his
+                        })}/>
 
       <FormGroup row>
         <FormControlLabel label="歌曲" control={
@@ -231,7 +251,7 @@ const Header = (props: { sx?: SxProps }) => {
 // 搜索结果的单个歌曲组件
 const SongItem = (props: { song: Song }) => {
   return (
-    <ListItem className="hoverable" divider>
+    <ListItem divider className={"hoverable"}>
       <ListItemText primary={props.song.name}
                     secondary={props.song.singers.map(item => item.name).join(" / ")}
       />
@@ -252,8 +272,9 @@ const Content = (props: { sx?: SxProps }) => {
   return (
     <ListInfinite sx={{...props.sx}} content={
       <Fragment>
+        {console.log(TAG, "歌曲数", songList.length, total, songList.length === total)}
         {songList.map((song, key) => <SongItem key={key} song={song}/>)}
-        {songList.length !== 0 && songList.length === total && <Alert severity="success">已显示所有结果</Alert>}
+        {(songList.length !== 0 && songList.length === total) && <Alert severity="success">已显示所有结果</Alert>}
       </Fragment>} onLoadNext={() => {
       if (songList.length < total) {
         setPage(prev => ++prev)
@@ -264,12 +285,9 @@ const Content = (props: { sx?: SxProps }) => {
 
 // 音乐面板组件
 const Music = () => {
-  useEffect(() => {
-    document.title = "音乐下载"
-  })
 
   return (
-    <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100vh", overflowY: "hidden"}}>
+    <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%", overflowY: "hidden"}}>
       <Header/>
       <Content/>
     </Stack>

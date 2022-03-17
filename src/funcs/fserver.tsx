@@ -7,7 +7,7 @@ import {
   IconButton,
   List,
   ListItem,
-  ListItemAvatar,
+  ListItemAvatar, ListItemButton,
   ListItemText,
   Menu,
   MenuItem,
@@ -20,11 +20,10 @@ import {useBetween} from "use-between"
 import {FileInfo, JResult} from "../comm/typedef"
 import {request} from "do-utils"
 import {LS_AUTH_KEY, LS_Trans_KEY} from "./settings"
-import {useSnackbar} from "../components/snackbar"
-import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined'
+import {SnackbarMsg, useSnackbar} from "../components/snackbar"
 import FolderOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
 import FileOutlinedIcon from '@mui/icons-material/FileOpenOutlined'
-import {useDialog} from "../components/dialog"
+import {DialogMsg, useDialog} from "../components/dialog"
 import {ReactComponent as IconNginx} from "../icons/nginx.svg"
 import {ReactComponent as IconLink} from "../icons/link.svg"
 import {ReactComponent as IconMagnet} from "../icons/magnet.svg"
@@ -33,6 +32,7 @@ import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
 import FilesUpload from "../components/files_upload"
 import {useBackdrop} from "../components/backdrop"
 import DrawerComp, {DrawerMsg, useDrawer} from "../components/drawer"
+import {HighlightOffOutlined} from "@mui/icons-material"
 
 // 标签
 const TAG = "[FServer]"
@@ -128,6 +128,72 @@ const Navbar = () => {
   )
 }
 
+// 下载文件
+const onDownloadFile = async (name: string, path: string) => {
+  // 下载文件
+  // window.open(`/downloads/${paths.join("/")}/${props.file.name}`, "target")
+  // 授权验证码
+  const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
+  let enPath = encodeURIComponent(path)
+  let resp = await request(`/api/file/download?path=${enPath}`,
+    undefined, {headers: headers})
+
+  let objectUrl = window.URL.createObjectURL(await resp.blob())
+  let anchor = document.createElement("a")
+  document.body.appendChild(anchor)
+  anchor.href = objectUrl
+  anchor.download = name
+  anchor.click()
+
+  anchor.remove()
+  window.URL.revokeObjectURL(objectUrl)
+}
+
+// 删除文件
+const onDelFile = (name: string, path: string,
+                   setPaths: React.Dispatch<React.SetStateAction<Array<string>>>,
+                   setSbMsg: React.Dispatch<React.SetStateAction<SnackbarMsg>>,
+                   setDialogMsg: React.Dispatch<React.SetStateAction<DialogMsg>>
+) => setDialogMsg({
+  open: true,
+  title: "确定删除文件",
+  message: `"${name}"`,
+  onCancel: () => setDialogMsg(prev => ({...prev, open: false})),
+  onOK: async () => {
+    setDialogMsg(prev => ({...prev, open: false}))
+
+    // 授权验证码
+    const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
+    let data = `path=${encodeURIComponent(path)}`
+    let resp = await request("/api/file/del", data, {headers: headers})
+    let obj: JResult<Array<FileInfo>> = await resp.json()
+
+    // 删除失败
+    if (!obj || obj.code !== 0) {
+      console.log(TAG, "文件删除失败：", obj?.msg || `服务端响应码 ${resp.status}`)
+      setSbMsg(prev => ({
+        ...prev,
+        open: true,
+        message: `文件删除失败：${obj?.msg || `服务端响应码 ${resp.status}`}`,
+        severity: "error",
+        autoHideDuration: undefined,
+        onClose: () => console.log("已手动关闭 Snackbar")
+      }))
+      return
+    }
+
+    // 删除成功，更新界面
+    console.log(TAG, `文件删除成功："${name}"`)
+    setPaths(prev => [...prev])
+    setSbMsg(prev => ({
+      ...prev,
+      open: true,
+      message: `文件删除成功："${name}"`,
+      severity: "success"
+    }))
+  }
+})
+
 // 文件列表项
 const FItem = (props: { file: FileInfo }) => {
   // 导航栏路径
@@ -138,80 +204,25 @@ const FItem = (props: { file: FileInfo }) => {
   const {setDialogMsg} = useBetween(useDialog)
 
   return (
-    <ListItem className="hoverable" divider>
-      <ListItemAvatar>
-        <Avatar>
-          {props.file.is_dir ? <FolderOutlinedIcon/> : <FileOutlinedIcon/>}
-        </Avatar>
-      </ListItemAvatar>
+    <ListItem divider>
+      <ListItemButton onClick={() => props.file.is_dir ?
+        setPaths(prev => [...prev, props.file.name]) :
+        onDownloadFile(props.file.name, `${paths.join("/")}/${props.file.name}`)
+      }>
+        <ListItemAvatar>
+          <Avatar>{props.file.is_dir ? <FolderOutlinedIcon/> : <FileOutlinedIcon/>}</Avatar>
+        </ListItemAvatar>
 
-      <ListItemText primary={props.file.name} secondary={<span className={"row"} style={{gap: "16px"}}>
-        <span>{props.file.last}</span>
-        {!props.file.is_dir && <span>{props.file.size}</span>}
-      </span>} onClick={async () => {
-        if (props.file.is_dir) {
-          // 打开目录
-          setPaths(prev => [...prev, props.file.name])
-        } else {
-          // 下载文件
-          // window.open(`/downloads/${paths.join("/")}/${props.file.name}`, "target")
-          // 授权验证码
-          const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
-          let enPath = encodeURIComponent(`${paths.join("/")}/${props.file.name}`)
-          let resp = await request(`/api/file/download?path=${enPath}`,
-            undefined, {headers: headers})
-          let objectUrl = window.URL.createObjectURL(await resp.blob())
-          let anchor = document.createElement("a")
-          document.body.appendChild(anchor)
-          anchor.href = objectUrl
-          anchor.download = props.file.name
-          anchor.click()
+        <ListItemText primary={props.file.name} secondary={<span className={"row"} style={{gap: "16px"}}>
+                        <span>{props.file.last}</span>
+          {!props.file.is_dir && <span>{props.file.size}</span>}</span>}
+        />
+      </ListItemButton>
 
-          anchor.remove()
-          window.URL.revokeObjectURL(objectUrl)
-        }
-      }}/>
-
-      <IconButton onClick={() => setDialogMsg({
-        open: true,
-        title: "确定删除文件",
-        message: `"${props.file.name}"`,
-        onCancel: () => setDialogMsg(prev => ({...prev, open: false})),
-        onOK: async () => {
-          setDialogMsg(prev => ({...prev, open: false}))
-
-          // 授权验证码
-          const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
-          let data = `path=${encodeURIComponent(`${paths.join("/")}/${props.file.name}`)}`
-          let resp = await request("/api/file/del", data, {headers: headers})
-          let obj: JResult<Array<FileInfo>> = await resp.json()
-
-          // 删除失败
-          if (!obj || obj.code !== 0) {
-            console.log(TAG, "文件删除失败：", obj?.msg || `服务端响应码 ${resp.status}`)
-            setSbMsg(prev => ({
-              ...prev,
-              open: true,
-              message: `文件删除失败：${obj?.msg || `服务端响应码 ${resp.status}`}`,
-              severity: "error",
-              autoHideDuration: undefined,
-              onClose: () => console.log("已手动关闭 Snackbar")
-            }))
-            return
-          }
-
-          // 删除成功，更新界面
-          setPaths(prev => [...prev])
-
-          console.log(TAG, `文件删除成功："${props.file.name}"`)
-          setSbMsg(prev => ({
-            ...prev,
-            open: true,
-            message: `文件删除成功："${props.file.name}"`,
-            severity: "success"
-          }))
-        }
-      })}><HighlightOffOutlinedIcon/></IconButton>
+      <IconButton onClick={() =>
+        onDelFile(props.file.name, `${paths.join("/")}/${props.file.name}`,
+          setPaths, setSbMsg, setDialogMsg)}><HighlightOffOutlined/>
+      </IconButton>
     </ListItem>
   )
 }
@@ -243,6 +254,7 @@ const FList = (props: { sx?: SxProps }) => {
       // 获取失败
       if (!obj || obj.code !== 0) {
         console.log(TAG, "获取文件列表失败：", obj?.msg || `服务端响应码 ${resp.status}`)
+        setBackdropMsg(prev => ({...prev, open: false}))
         setSbMsg(prev => ({
           ...prev,
           open: true,
@@ -290,12 +302,8 @@ const FServer = () => {
   // 共享文件上传状态
   const {setDrawerMsg} = useBetween(useDrawer)
 
-  useEffect(() => {
-    document.title = "文件管理器"
-  }, [])
-
   return (
-    <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100vh", overflowY: "hidden"}}>
+    <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%", overflowY: "hidden"}}>
       <Navbar/>
       <FList sx={{overflowY: "auto"}}/>
       <FilesUpload id={"UP_FILES"} apiURL={"/api/file/upload"} headers={headers}

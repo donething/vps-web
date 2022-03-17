@@ -3,7 +3,7 @@ import React, {useState} from "react"
 import {useBetween} from "use-between"
 
 // 控制 蒙版组件 Backdrop 的信息
-class BackdropMsg {
+export class BackdropMsg {
   // 必须
   open: boolean = false
   // 需要显示的组件

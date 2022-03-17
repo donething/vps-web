@@ -5,7 +5,7 @@ import {request} from "do-utils"
 import {JResult} from "../comm/typedef"
 
 // 参数的类型
-interface FilesUploadProps {
+type FilesUploadProps = {
   // input 的 ID，用于手动显示文件选择框：document.querySelector(`#${id}`).click()
   id: string,
   // 上传地址

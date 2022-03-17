@@ -4,7 +4,7 @@ import {Alert, Snackbar, SxProps} from "@mui/material"
 import {useBetween} from "use-between"
 
 // 控制显示 Snackbar
-class SnackbarMsg {
+export class SnackbarMsg {
   open: boolean = false   // 必须
   message: string = ""    // 必须
   severity: "error" | "warning" | "info" | "success" = "info"

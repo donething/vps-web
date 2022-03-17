@@ -64,10 +64,6 @@ const AlbumsStatus = (props: { sx?: SxProps }): JSX.Element => {
 
 // 任务状态的组件
 const Tasks = () => {
-  useEffect(() => {
-    document.title = "图集下载状态"
-  }, [])
-
   return (
     <Stack>
       <AlbumsStatus sx={{width: {sm: 300}}}/>
