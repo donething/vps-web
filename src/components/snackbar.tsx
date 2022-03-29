@@ -12,7 +12,7 @@ export class SnackbarMsg {
   action?: ReactNode
   // 当指定数字（毫秒，通常设为 6000）时自动隐藏
   autoHideDuration?: number = 6000
-  // 当不指定时，不会显示关闭按钮，若 autoHideDuration 为空时需指定以便关闭
+  // 当为空时，不会显示关闭按钮，若 autoHideDuration 为空时需指定以便关闭
   onClose?: () => void
 
   // 其它属性

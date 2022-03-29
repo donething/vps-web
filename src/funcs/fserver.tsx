@@ -3,14 +3,14 @@ import {
   Avatar,
   Breadcrumbs,
   Button,
-  Divider,
+  Divider, Drawer,
   IconButton,
   List,
   ListItem,
   ListItemAvatar, ListItemButton,
   ListItemText,
   Menu,
-  MenuItem,
+  MenuItem, Skeleton,
   Stack,
   SvgIcon,
   SxProps,
@@ -19,7 +19,7 @@ import React, {Fragment, useEffect, useState} from "react"
 import {useBetween} from "use-between"
 import {FileInfo, JResult} from "../comm/typedef"
 import {request} from "do-utils"
-import {LS_AUTH_KEY, LS_Trans_KEY} from "./settings"
+import {LS_AUTH_KEY, LS_DL_WITH_NGINX, LS_Trans_KEY} from "./settings"
 import {SnackbarMsg, useSnackbar} from "../components/snackbar"
 import FolderOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
 import FileOutlinedIcon from '@mui/icons-material/FileOpenOutlined'
@@ -30,8 +30,6 @@ import {ReactComponent as IconMagnet} from "../icons/magnet.svg"
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
 import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
 import FilesUpload from "../components/files_upload"
-import {useBackdrop} from "../components/backdrop"
-import DrawerComp, {DrawerMsg, useDrawer} from "../components/drawer"
 import {HighlightOffOutlined} from "@mui/icons-material"
 
 // 标签
@@ -50,7 +48,7 @@ const Menus = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
   // 共享 显示上传状态组件
-  const {setDrawerMsg} = useBetween(useDrawer)
+  const {setFStatusOpen} = useBetween(useFileUpStatus)
 
   // 点击了菜单弹出菜单列表
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -75,7 +73,7 @@ const Menus = () => {
         (document.querySelector("#UP_FILES") as HTMLElement).click()
         break
       case "UD_Progress":
-        setDrawerMsg(prev => ({...prev, open: true, anchor: "top"}))
+        setFStatusOpen(true)
         break
     }
   }
@@ -128,10 +126,55 @@ const Navbar = () => {
   )
 }
 
+// 文件上传状态的类型
+class UpStatusType {
+  name: string = ""
+  status: boolean | string = false
+}
+
+// 共享文件上传的状态
+const useFileUpStatus = () => {
+  // 文件上传状态的开关、列表
+  const [fStatusOpen, setFStatusOpen] = useState(false)
+  const [filesStatus, setFilesStatus] = useState<Array<UpStatusType>>([])
+
+  return {fStatusOpen, setFStatusOpen, filesStatus, setFilesStatus}
+}
+
+// 文件上传状态的组件
+const FilesStatus = () => {
+  const {fStatusOpen, setFStatusOpen, filesStatus} = useBetween(useFileUpStatus)
+
+  const getSeverity = (status: boolean | string) => status === true ? "success" :
+    status === false ? "info" : "error"
+  const getContent = (name: string, status: boolean | string) => status === true ? `"${name}" 上传成功` :
+    status === false ? `"${name}" 正在上传…` : `"${name}" 上传出错：${status}`
+
+  return (
+    <Drawer anchor={"top"} open={fStatusOpen}
+            onClose={() => setFStatusOpen(false)}>
+      <Stack>
+        <div style={{padding: "10px 16px", margin: "auto"}}>上传文件的状态</div>
+        {
+          filesStatus.map((item, index) =>
+            <Alert key={index} severity={getSeverity(item.status)}>
+              {getContent(item.name, item.status)}
+            </Alert>)
+        }
+      </Stack>
+    </Drawer>
+  )
+}
+
 // 下载文件
 const onDownloadFile = async (name: string, path: string) => {
-  // 下载文件
-  // window.open(`/downloads/${paths.join("/")}/${props.file.name}`, "target")
+  // 通过 Nginx 下载文件
+  if (localStorage.getItem(LS_DL_WITH_NGINX) === "true") {
+    window.open(`/downloads/${path}`, "_blank")
+    return
+  }
+
+  // 通过 Golang 后台服务下载文件
   // 授权验证码
   const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
   let enPath = encodeURIComponent(path)
@@ -150,10 +193,12 @@ const onDownloadFile = async (name: string, path: string) => {
 }
 
 // 删除文件
-const onDelFile = (name: string, path: string,
-                   setPaths: React.Dispatch<React.SetStateAction<Array<string>>>,
-                   setSbMsg: React.Dispatch<React.SetStateAction<SnackbarMsg>>,
-                   setDialogMsg: React.Dispatch<React.SetStateAction<DialogMsg>>
+const onDelFile = (
+  name: string,
+  path: string,
+  setPaths: React.Dispatch<React.SetStateAction<Array<string>>>,
+  setSbMsg: React.Dispatch<React.SetStateAction<SnackbarMsg>>,
+  setDialogMsg: React.Dispatch<React.SetStateAction<DialogMsg>>
 ) => setDialogMsg({
   open: true,
   title: "确定删除文件",
@@ -166,29 +211,42 @@ const onDelFile = (name: string, path: string,
     const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
     let data = `path=${encodeURIComponent(path)}`
     let resp = await request("/api/file/del", data, {headers: headers})
-    let obj: JResult<Array<FileInfo>> = await resp.json()
-
-    // 删除失败
-    if (!obj || obj.code !== 0) {
-      console.log(TAG, "文件删除失败：", obj?.msg || `服务端响应码 ${resp.status}`)
+      .catch(e => console.log(`删除文件"${name} 出错：`, e))
+    // 网络出错
+    if (!resp) {
       setSbMsg(prev => ({
         ...prev,
         open: true,
-        message: `文件删除失败：${obj?.msg || `服务端响应码 ${resp.status}`}`,
+        message: "删除文件出错：无法连接到目标网站",
         severity: "error",
         autoHideDuration: undefined,
-        onClose: () => console.log("已手动关闭 Snackbar")
+        onClose: () => console.log("")
+      }))
+      return
+    }
+
+    let obj: JResult<Array<FileInfo>> = await resp.json()
+    // 删除失败
+    if (obj.code !== 0) {
+      console.log(TAG, "删除文件失败：", obj?.msg)
+      setSbMsg(prev => ({
+        ...prev,
+        open: true,
+        message: `删除文件失败：${obj?.msg}`,
+        severity: "error",
+        autoHideDuration: undefined,
+        onClose: () => console.log("")
       }))
       return
     }
 
     // 删除成功，更新界面
-    console.log(TAG, `文件删除成功："${name}"`)
+    console.log(TAG, `已删除文件"${name}"`)
     setPaths(prev => [...prev])
     setSbMsg(prev => ({
       ...prev,
       open: true,
-      message: `文件删除成功："${name}"`,
+      message: `已删除文件"${name}"`,
       severity: "success"
     }))
   }
@@ -204,7 +262,7 @@ const FItem = (props: { file: FileInfo }) => {
   const {setDialogMsg} = useBetween(useDialog)
 
   return (
-    <ListItem divider sx={{paddingLeft: 0, paddingRight: 0}}>
+    <ListItem divider sx={{padding: 0}}>
       <ListItemButton onClick={() => props.file.is_dir ?
         setPaths(prev => [...prev, props.file.name]) :
         onDownloadFile(props.file.name, `${paths.join("/")}/${props.file.name}`)
@@ -237,38 +295,47 @@ const FList = (props: { sx?: SxProps }) => {
   const {paths} = useBetween(useNavbarPath)
   // 共享 Snackbar
   const {setSbMsg} = useBetween(useSnackbar)
-  // 共享 Backdrop
-  const {setBackdropMsg} = useBetween(useBackdrop)
 
   // 获取文件列表
   useEffect(() => {
     // 获取
     const obtain = async () => {
-      console.log(TAG, `读取路径 "${paths.join('/')}"`)
-      setBackdropMsg(prev => ({...prev, bg: "transparent", open: true}))
-
+      const path = paths.join('/')
+      console.log(TAG, `读取路径 "${path}"`)
       // 授权验证码
       const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
-      let resp = await request(`/api/file/list?path=${encodeURIComponent(paths.join("/"))}`,
+      let resp = await request(`/api/file/list?path=${encodeURIComponent(path)}`,
         undefined, {headers: headers})
-      let obj: JResult<Array<FileInfo>> = await resp.json().catch(e => console.log("获取文件列表出错：", e))
-      // 获取失败
-      if (!obj || obj.code !== 0) {
-        console.log(TAG, "获取文件列表失败：", obj?.msg || `服务端响应码 ${resp.status}`)
-        setBackdropMsg(prev => ({...prev, open: false}))
+        .catch(e => console.log(`读取路径"${path} 出错：`, e))
+      // 网络出错
+      if (!resp) {
         setSbMsg(prev => ({
           ...prev,
           open: true,
-          message: `获取文件列表失败：${obj?.msg || `服务端响应码 ${resp.status}`}`,
+          message: "读取路径出错：无法连接服务器",
           severity: "error",
           autoHideDuration: undefined,
-          onClose: () => console.log("已手动关闭 Snackbar")
+          onClose: () => console.log("")
+        }))
+        return
+      }
+
+      let obj: JResult<Array<FileInfo>> = await resp.json()
+      // 获取失败
+      if (obj.code !== 0) {
+        console.log(TAG, "读取路径失败：", obj.msg)
+        setSbMsg(prev => ({
+          ...prev,
+          open: true,
+          message: `读取路径失败：${obj.msg}`,
+          severity: "error",
+          autoHideDuration: undefined,
+          onClose: () => console.log("")
         }))
         return
       }
 
       setFiles(obj.data)
-      setBackdropMsg(prev => ({...prev, open: false}))
     }
 
     // 执行
@@ -276,23 +343,10 @@ const FList = (props: { sx?: SxProps }) => {
   }, [paths])
 
   return (
-    <List sx={{...props.sx}}>{files.map((f, i) => <FItem key={i} file={f}/>)}</List>
+    files.length === 0 ?
+      <Skeleton animation={"wave"} sx={{height: 30}}/> :
+      <List sx={{...props.sx}}>{files.map((f, i) => <FItem key={i} file={f}/>)}</List>
   )
-}
-
-// 每完成一个文件后的回调
-const onFileUpFinish = (name: string, err: Error | undefined,
-                        setMsg: React.Dispatch<React.SetStateAction<DrawerMsg>>) => {
-  let msg = (err ? <Alert severity="error">{`上传失败："${name}"`}</Alert> :
-    <Alert severity="success">{`上传成功："${name}"`}</Alert>)
-
-  setMsg(prev => ({
-    ...prev,
-    content: <Fragment>
-      {prev.content}
-      {msg}
-    </Fragment>
-  }))
 }
 
 // 文件管理组件
@@ -300,8 +354,10 @@ const FServer = () => {
   // 授权验证码
   const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
 
-  // 共享文件上传状态
-  const {setDrawerMsg} = useBetween(useDrawer)
+  // 文件上传状态
+  const {filesStatus, setFilesStatus} = useBetween(useFileUpStatus)
+  // 共享 Snackbar
+  const {setSbMsg} = useBetween(useSnackbar)
 
   useEffect(() => {
     document.title = "文件管理"
@@ -310,10 +366,46 @@ const FServer = () => {
   return (
     <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%", overflowY: "hidden"}}>
       <Navbar/>
+
       <FList sx={{overflowY: "auto"}}/>
+
       <FilesUpload id={"UP_FILES"} apiURL={"/api/file/upload"} headers={headers}
-                   onFinish={(name, err) => onFileUpFinish(name, err, setDrawerMsg)}/>
-      <DrawerComp/>
+                   onUpload={name => setFilesStatus(prev => {
+                     // 改变文件上传的状态
+                     let newStatus = [...prev]
+                     let index = newStatus.findIndex(item => item.name === name)
+                     // 不存在时，直接追加新上传文件的状态
+                     if (index === -1) {
+                       return [...prev, {name: name, status: false}]
+                     }
+                     // 已存在时，提取到后面，并设置其上传状态为未完成
+                     let current = newStatus.splice(index, 1)
+                     current[0].status = false
+                     return [...newStatus, ...current]
+                   })}
+                   onFinish={(name, err) => {
+                     // 文件上传成功、失败的处理
+                     const msg = `上传文件"${name}" ` + (err ? `失败：${err.toString()}` : "成功")
+                     console.log(TAG, msg)
+                     setSbMsg(prev => ({
+                       ...prev,
+                       open: true,
+                       message: msg,
+                       severity: err ? "error" : "success",
+                       autoHideDuration: err ? undefined : 6000,
+                       onClose: err ? () => console.log("") : undefined
+                     }))
+
+                     let newStatus = [...filesStatus]
+                     let index = newStatus.findIndex(item => item.name === name)
+                     if (index === -1) {
+                       console.log(TAG, `无法改变文件"${name}"的上传状态，找不到索引`, newStatus)
+                       return
+                     }
+                     newStatus[index].status = err ? err.toString() : true
+                     setFilesStatus(newStatus)
+                   }}/>
+      <FilesStatus/>
     </Stack>
   )
 }
