@@ -3,6 +3,8 @@ import {Button, Card, CardActions, CardContent, Stack, Typography} from "@mui/ma
 import {useBetween} from "use-between"
 import {useSnackbar} from "../components/snackbar"
 import {getJSON} from "../comm/comm"
+import {sha256} from "do-utils/dist/text"
+import {LS_AUTH_KEY} from "./settings"
 
 // 标签
 const TAG = "[MyRouter]"
@@ -56,8 +58,11 @@ const MyRouter = (): JSX.Element => {
         </CardContent>
 
         <CardActions>
-          <Button size={"small"} disabled={ipInfo.ipv6.trim() === ""} onClick={() => {
-            window.open(`http://[${ipInfo.ipv6}]:20220`, "_blank")
+          <Button size={"small"} disabled={ipInfo.ipv6.trim() === ""} onClick={async () => {
+            let auth = localStorage.getItem(LS_AUTH_KEY) || ""
+            let t = new Date().getTime()
+            let s = await sha256(auth + t + auth)
+            window.open(`http://[${ipInfo.ipv6}]:20220?t=${t}&s=${s}`, "_blank")
           }}>打开管理页面</Button>
         </CardActions>
       </Card>

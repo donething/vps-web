@@ -3,24 +3,30 @@ import {request} from "do-utils"
 import {JResult} from "./typedef"
 import React from "react"
 import {SnackbarMsg} from "../components/snackbar"
+import {sha256} from "do-utils/dist/text"
 
 // 执行网络请求，适配当前界面
 export const getJSON = async <T>(
-  url: string,
+  path: string,
   data: string | object | FormData | undefined,
   setSbMsg: React.Dispatch<React.SetStateAction<SnackbarMsg>>
 ): Promise<JResult<T> | undefined> => {
-  // 请求头
-  const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
+  // 操作授权码
+  let auth = localStorage.getItem(LS_AUTH_KEY) || ""
+  let t = new Date().getTime()
+  let s = await sha256(auth + t + auth)
 
-  let resp = await request(url, data, {headers: headers})
-    .catch(e => console.error(`执行网络请求 "${url}" 出错`, e))
+  // 追加授权码
+  let p = path + (path.indexOf("?") === -1 ? "?" : "&") + `t=${t}&s=${s}`
+
+  let resp = await request(p, data)
+    .catch(e => console.error(`执行网络请求 "${path}" 出错`, e))
   // 网络出错
   if (!resp) {
     setSbMsg(prev => ({
       ...prev,
       open: true,
-      message: `执行网络请求 "${url}" 出错`,
+      message: `执行网络请求 "${path}" 出错`,
       severity: "error",
       autoHideDuration: undefined,
       onClose: () => console.log("")
