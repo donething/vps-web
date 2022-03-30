@@ -46,9 +46,7 @@ const MyRouter = (): JSX.Element => {
       if (ipInfoObj.data.ipv6.trim() !== "") {
         let statusURL = `http://[${ipInfoObj.data.ipv6}]:9090/api/status`
         let statusObj = await getJSON<IPInfo>(statusURL, undefined, setSbMsg)
-        if (statusObj) {
-          setStatus(statusObj.code === 0)
-        }
+        setStatus(statusObj?.code === 0)
       } else {
         console.log(TAG, "获取的路由器的 IPv6 地址为空")
       }
