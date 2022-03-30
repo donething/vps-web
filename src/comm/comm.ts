@@ -10,6 +10,7 @@ export const getJSON = async <T>(
   data: string | object | FormData | undefined,
   setSbMsg: React.Dispatch<React.SetStateAction<SnackbarMsg>>
 ): Promise<JResult<T> | undefined> => {
+  // 请求头
   const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
 
   let resp = await request(url, data, {headers: headers})
@@ -28,6 +29,19 @@ export const getJSON = async <T>(
   }
 
   let obj: JResult<T> = await resp.json()
+    .catch(e => console.error(`解析响应为 JSON 对象时出错`, e))
+  if (!obj) {
+    setSbMsg(prev => ({
+      ...prev,
+      open: true,
+      message: "解析响应为 JSON 对象时出错",
+      severity: "error",
+      autoHideDuration: undefined,
+      onClose: () => console.log("")
+    }))
+    return undefined
+  }
+
   // 获取失败
   if (obj.code !== 0) {
     console.log(`获取远程数据失败：`, obj.msg)

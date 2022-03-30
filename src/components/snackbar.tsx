@@ -31,10 +31,15 @@ const SnackbarComp = (props: { sx?: SxProps }) => {
 
   return (
     <Snackbar sx={{...props.sx}} {...sbMsg.ps} open={sbMsg.open}
-              autoHideDuration={sbMsg.autoHideDuration} onClose={() => {
-      // 用于关闭 Snackbar，如果没有该 onClose 回调，Snackbar 将无法关闭（即使指定了 autoHideDuration）
-      setSbMsg(prev => ({...prev, open: false}))
-    }}>
+              autoHideDuration={sbMsg.autoHideDuration}
+              onClose={(e, reason: string) => {
+                // 当提示不自动隐藏时，点击提示外部时也不隐藏
+                if (!sbMsg.autoHideDuration && reason === "clickaway") {
+                  return
+                }
+                // 用于关闭 Snackbar，如果没有该 onClose 回调，Snackbar 将无法关闭（即使指定了 autoHideDuration）
+                setSbMsg(prev => ({...prev, open: false}))
+              }}>
       <Alert sx={{width: "100%"}} severity={sbMsg.severity} action={sbMsg.action}
              onClose={!sbMsg.onClose ? undefined : () => {
                // 用于点击关闭按钮后回调，如果没有 onClose 属性，将不出现关闭按钮

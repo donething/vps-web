@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react"
-import {Button, Card, CardActions, CardContent, Divider, Stack, Typography} from "@mui/material"
+import {Button, ButtonGroup, Card, CardActions, CardContent, Divider, Stack, Typography} from "@mui/material"
 import {useBetween} from "use-between"
 import {useSnackbar} from "../components/snackbar"
 import {useDialog} from "../components/dialog"
@@ -15,6 +15,11 @@ class IPInfo {
   ipv6: string = ""
 }
 
+/**
+ * 控制路由器组件
+ * 发送给 VPS 后台服务的的请求可直接访问 "/api/..."，
+ * 控制路由器的请求需要添加 IP：`http://[${ipInfo.ipv6}]:9090/api/reboot`
+ */
 const MyRouter = (): JSX.Element => {
   // 路由器的 IP 信息
   const [ipInfo, setIPInfo] = useState(new IPInfo())
@@ -78,40 +83,42 @@ const MyRouter = (): JSX.Element => {
         </CardContent>
 
         <CardActions>
-          <Button size="small" onClick={() => {
-            setDialogMsg(prev => ({
-              ...prev, open: true, title: "确认",
-              message: "重启路由器？", onOK: async () => {
-                let url = `http://[${ipInfo.ipv6}]:9090/api/reboot`
-                let obj = await getJSON<undefined>(url, {}, setSbMsg)
-                if (!obj) return
+          <ButtonGroup disabled={ipInfo.ipv6.trim() === ""}>
+            <Button size="small" onClick={() => {
+              setDialogMsg(prev => ({
+                ...prev, open: true, title: "确认",
+                message: "重启路由器？", onOK: async () => {
+                  let url = `http://[${ipInfo.ipv6}]:9090/api/reboot`
+                  let obj = await getJSON<undefined>(url, {}, setSbMsg)
+                  if (!obj) return
 
-                setSbMsg(prev => ({
-                  ...prev,
-                  open: true,
-                  message: obj?.msg || "",
-                  severity: obj?.code === 0 ? "success" : "error",
-                  autoHideDuration: obj?.code === 0 ? 6 : undefined,
-                  onClose: obj?.code === 0 ? undefined : () => console.log("")
-                }))
-              }
-            }))
-          }}>重启路由器</Button>
+                  setSbMsg(prev => ({
+                    ...prev,
+                    open: true,
+                    message: obj?.msg || "",
+                    severity: obj?.code === 0 ? "success" : "error",
+                    autoHideDuration: obj?.code === 0 ? 6 : undefined,
+                    onClose: obj?.code === 0 ? undefined : () => console.log("")
+                  }))
+                }
+              }))
+            }}>重启路由器</Button>
 
-          <Button size="small" onClick={async () => {
-            let url = `http://[${ipInfo.ipv6}]:9090/api/wol`
-            let obj = await getJSON<undefined>(url, {}, setSbMsg)
-            if (!obj) return
+            <Button size="small" onClick={async () => {
+              let url = `http://[${ipInfo.ipv6}]:9090/api/wol`
+              let obj = await getJSON<undefined>(url, {}, setSbMsg)
+              if (!obj) return
 
-            setSbMsg(prev => ({
-              ...prev,
-              open: true,
-              message: obj?.msg || "",
-              severity: obj?.code === 0 ? "success" : "error",
-              autoHideDuration: obj?.code === 0 ? 6 : undefined,
-              onClose: obj?.code === 0 ? undefined : () => console.log("")
-            }))
-          }}>远程开机</Button>
+              setSbMsg(prev => ({
+                ...prev,
+                open: true,
+                message: obj?.msg || "",
+                severity: obj?.code === 0 ? "success" : "error",
+                autoHideDuration: obj?.code === 0 ? 6 : undefined,
+                onClose: obj?.code === 0 ? undefined : () => console.log("")
+              }))
+            }}>远程开机</Button>
+          </ButtonGroup>
         </CardActions>
       </Card>
     </Stack>
