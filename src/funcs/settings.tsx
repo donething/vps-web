@@ -1,17 +1,15 @@
-// 文件操作验证码存储到 localStorage 的键
 import {useEffect, useState} from "react"
-import {Button, FormControl, FormControlLabel, InputLabel, OutlinedInput, Stack, Switch} from "@mui/material"
+import {Button, FormControl, InputLabel, OutlinedInput, Stack} from "@mui/material"
 import {useBetween} from "use-between"
 import {useSnackbar} from "../components/snackbar"
 
+// 标签
 const TAG = "[Settings]"
 
-// 授权码，存储到 localStorage 的键
+// 操作授权码，存储到 localStorage 的键
 export const LS_AUTH_KEY = "auth_key"
 // Transmission 磁力下载地址，存储到 localStorage 的键
 export const LS_Trans_KEY = "transmission_url"
-// 是否通过Nginx服务下载文件，存储到 localStorage 的键
-export const LS_DL_WITH_NGINX = "dl_with_nginx"
 
 // Settings 设置
 const Settings = (): JSX.Element => {
@@ -19,8 +17,6 @@ const Settings = (): JSX.Element => {
   const [auth, setAuth] = useState("")
   // 磁力工具的地址
   const [trans, setTrans] = useState("")
-  // 是否通过 Nginx 下载文件
-  const [nginx, setNginx] = useState(false)
 
   // 共享 Snackbar
   const {setSbMsg} = useBetween(useSnackbar)
@@ -30,7 +26,6 @@ const Settings = (): JSX.Element => {
 
     setAuth(localStorage.getItem(LS_AUTH_KEY) || "")
     setTrans(localStorage.getItem(LS_Trans_KEY) || "")
-    setNginx(localStorage.getItem(LS_DL_WITH_NGINX) === "true")
   }, [])
 
   return (
@@ -68,13 +63,6 @@ const Settings = (): JSX.Element => {
           severity: "success"
         }))
       }}>保存</Button>
-
-      <FormControlLabel label="通过Nginx服务下载文件" control={
-        <Switch checked={nginx} onChange={e => {
-          setNginx(e.target.checked)
-          localStorage.setItem(LS_DL_WITH_NGINX, e.target.checked.toString())
-        }}/>}
-      />
     </Stack>
   )
 }

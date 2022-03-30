@@ -11,12 +11,11 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import PlayCircleOutlineOutlinedIcon from '@mui/icons-material/PlayCircleOutlineOutlined'
 import React, {Fragment, useEffect, useState} from "react"
 import {useBetween} from "use-between"
-import {LS_AUTH_KEY} from "./settings"
-import {request} from "do-utils"
 import {useSnackbar} from "../components/snackbar"
 import ListInfinite from "../components/list_infinite"
 import AutocompleteComp from "../components/autocomplete"
 import {useBackdrop} from "../components/backdrop"
+import {getJSON} from "../comm/comm"
 
 // 标签
 const TAG = "[Music]"
@@ -24,13 +23,9 @@ const TAG = "[Music]"
 const LS_HIST_KEY = "history_words"
 
 // 搜索歌曲时返回的结果
-interface SMResp {
-  code: number
-  msg: string
-  data: {
-    total: string
-    payload: Song[]
-  }
+interface SMData {
+  total: string
+  payload: Song[]
 }
 
 // 歌曲信息
@@ -202,27 +197,11 @@ const Content = (props: { sx?: SxProps, keyword: string, ops: Ops }) => {
       console.log(TAG, `搜索歌曲"${props.keyword}"，第 ${page} 页`)
       setBackdropMsg(prev => ({...prev, bg: "transparent", open: true}))
 
-      // 授权验证码
-      const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
-      let resp = await request("/api/music/search?page=" + page + "&keyword=" +
+      let path = "/api/music/search?page=" + page + "&keyword=" +
         encodeURIComponent(props.keyword) + "&ops=" +
-        encodeURIComponent(JSON.stringify(props.ops)), undefined, {headers: headers})
-      let obj: SMResp = await resp.json().catch(e => console.log(TAG, "搜索歌曲出错：", e))
-
-      // 获取失败
-      if (!obj || obj.code !== 0) {
-        console.log(TAG, "搜索歌曲失败：", obj?.msg || `服务端响应码 ${resp.status}`)
-        setBackdropMsg(prev => ({...prev, open: false}))
-        setSbMsg(prev => ({
-          ...prev,
-          open: true,
-          message: `搜索歌曲失败：${obj?.msg || "服务端响应码 " + resp.status}`,
-          severity: "error",
-          autoHideDuration: undefined,
-          onClose: () => console.log("已手动关闭 Snackbar")
-        }))
-        return
-      }
+        encodeURIComponent(JSON.stringify(props.ops))
+      let obj = await getJSON<SMData>(path, undefined, setSbMsg)
+      if (!obj) return
 
       // 没有搜到匹配的歌曲
       if (!obj.data.payload || obj.data.payload.length === 0) {
@@ -238,7 +217,7 @@ const Content = (props: { sx?: SxProps, keyword: string, ops: Ops }) => {
       }
 
       // 填充
-      setSongList(prev => [...prev, ...obj.data.payload])
+      setSongList(prev => [...prev, ...obj?.data?.payload || []])
 
       setBackdropMsg(prev => ({...prev, open: false}))
 

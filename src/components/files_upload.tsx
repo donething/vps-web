@@ -1,6 +1,5 @@
 import React from "react"
-import {request} from "do-utils"
-import {JResult} from "../comm/typedef"
+import {getJSON} from "../comm/comm"
 
 // 参数的类型
 type FilesUploadProps = {
@@ -40,18 +39,11 @@ const FilesUpload = (props: FilesUploadProps) => {
       // 正式上传
       let form = new FormData()
       form.append(name, files[i])
-      let resp = await request(props.apiURL, form, {headers: props.headers})
-        .catch(e => console.log(`上传文件"${name} 出错：`, e))
-      // 网络出错
-      if (!resp) {
-        props.onFinish && props.onFinish(name, new Error("无法连接到目标网站"))
-        break
-      }
+      let obj = await getJSON<{ [name: string]: string }>(props.apiURL, form)
 
-      let obj: JResult<{ [name: string]: string }> = await resp.json()
       // 上传失败
-      if (obj.code !== 0) {
-        props.onFinish && props.onFinish(name, new Error(obj.data[name]))
+      if (!obj || obj.code !== 0) {
+        props.onFinish && props.onFinish(name, new Error(obj?.data[name] || "无法连接服务端"))
         continue
       }
 

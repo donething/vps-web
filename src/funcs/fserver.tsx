@@ -17,9 +17,8 @@ import {
 } from "@mui/material"
 import React, {Fragment, useEffect, useState} from "react"
 import {useBetween} from "use-between"
-import {FileInfo, JResult} from "../comm/typedef"
-import {request} from "do-utils"
-import {LS_AUTH_KEY, LS_DL_WITH_NGINX, LS_Trans_KEY} from "./settings"
+import {FileInfo} from "../comm/typedef"
+import {LS_AUTH_KEY, LS_Trans_KEY} from "./settings"
 import {SnackbarMsg, useSnackbar} from "../components/snackbar"
 import FolderOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
 import FileOutlinedIcon from '@mui/icons-material/FileOpenOutlined'
@@ -31,6 +30,7 @@ import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
 import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
 import FilesUpload from "../components/files_upload"
 import {HighlightOffOutlined} from "@mui/icons-material"
+import {getJSON} from "../comm/comm"
 
 // 标签
 const TAG = "[FServer]"
@@ -169,27 +169,7 @@ const FilesStatus = () => {
 // 下载文件
 const onDownloadFile = async (name: string, path: string) => {
   // 通过 Nginx 下载文件
-  if (localStorage.getItem(LS_DL_WITH_NGINX) === "true") {
-    window.open(`/downloads/${path}`, "_blank")
-    return
-  }
-
-  // 通过 Golang 后台服务下载文件
-  // 授权验证码
-  const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
-  let enPath = encodeURIComponent(path)
-  let resp = await request(`/api/file/download?path=${enPath}`,
-    undefined, {headers: headers})
-
-  let objectUrl = window.URL.createObjectURL(await resp.blob())
-  let anchor = document.createElement("a")
-  document.body.appendChild(anchor)
-  anchor.href = objectUrl
-  anchor.download = name
-  anchor.click()
-
-  anchor.remove()
-  window.URL.revokeObjectURL(objectUrl)
+  window.open(`/downloads/${path}`, "_blank")
 }
 
 // 删除文件
@@ -208,24 +188,10 @@ const onDelFile = (
     setDialogMsg(prev => ({...prev, open: false}))
 
     // 授权验证码
-    const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
     let data = `path=${encodeURIComponent(path)}`
-    let resp = await request("/api/file/del", data, {headers: headers})
-      .catch(e => console.log(`删除文件"${name} 出错：`, e))
-    // 网络出错
-    if (!resp) {
-      setSbMsg(prev => ({
-        ...prev,
-        open: true,
-        message: "删除文件出错：无法连接到目标网站",
-        severity: "error",
-        autoHideDuration: undefined,
-        onClose: () => console.log("")
-      }))
-      return
-    }
+    let obj = await getJSON<Array<FileInfo>>("/api/file/del", data, setSbMsg)
+    if (!obj) return
 
-    let obj: JResult<Array<FileInfo>> = await resp.json()
     // 删除失败
     if (obj.code !== 0) {
       console.log(TAG, "删除文件失败：", obj?.msg)
@@ -300,34 +266,19 @@ const FList = (props: { sx?: SxProps }) => {
   useEffect(() => {
     // 获取
     const obtain = async () => {
-      const path = paths.join('/')
+      let path = paths.join('/')
       console.log(TAG, `读取路径 "${path}"`)
-      // 授权验证码
-      const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
-      let resp = await request(`/api/file/list?path=${encodeURIComponent(path)}`,
-        undefined, {headers: headers})
-        .catch(e => console.log(`读取路径"${path} 出错：`, e))
-      // 网络出错
-      if (!resp) {
-        setSbMsg(prev => ({
-          ...prev,
-          open: true,
-          message: "读取路径出错：无法连接服务器",
-          severity: "error",
-          autoHideDuration: undefined,
-          onClose: () => console.log("")
-        }))
-        return
-      }
+      path = `/api/file/list?path=${encodeURIComponent(path)}`
+      let obj = await getJSON<Array<FileInfo>>(path, undefined, setSbMsg)
+      if (!obj) return
 
-      let obj: JResult<Array<FileInfo>> = await resp.json()
       // 获取失败
       if (obj.code !== 0) {
         console.log(TAG, "读取路径失败：", obj.msg)
         setSbMsg(prev => ({
           ...prev,
           open: true,
-          message: `读取路径失败：${obj.msg}`,
+          message: `读取路径失败：${obj?.msg}`,
           severity: "error",
           autoHideDuration: undefined,
           onClose: () => console.log("")
@@ -371,7 +322,8 @@ const FServer = () => {
 
       <FilesUpload id={"UP_FILES"} apiURL={"/api/file/upload"} headers={headers}
                    onUpload={name => setFilesStatus(prev => {
-                     // 改变文件上传的状态
+                     setSbMsg(prev => ({...prev, open: true, message: `开始上传文件"${name}"...`}))
+                     // 在上传列表中增加文件
                      let newStatus = [...prev]
                      let index = newStatus.findIndex(item => item.name === name)
                      // 不存在时，直接追加新上传文件的状态
