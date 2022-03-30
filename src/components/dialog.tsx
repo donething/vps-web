@@ -53,8 +53,14 @@ const DialogComp = (props: { sx?: SxProps }) => {
 
       <DialogActions>
         {dialogMsg.action ? dialogMsg.action : <Fragment>
-          <Button onClick={() => dialogMsg.onCancel && dialogMsg.onCancel()}>取消</Button>
-          <Button onClick={() => dialogMsg.onOK && dialogMsg.onOK()}>确定</Button>
+          <Button onClick={() => {
+            dialogMsg.onCancel && dialogMsg.onCancel()
+            setDialogMsg(prev => ({...prev, open: false}))
+          }}>取消</Button>
+          <Button onClick={() => {
+            dialogMsg.onOK && dialogMsg.onOK()
+            setDialogMsg(prev => ({...prev, open: false}))
+          }}>确定</Button>
         </Fragment>}
       </DialogActions>
     </Dialog>

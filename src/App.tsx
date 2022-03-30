@@ -10,6 +10,7 @@ function App() {
       <Link to={"music"}><Button size={"large"}>Music</Button></Link>
       <Link to={"fserver"}><Button size={"large"}>FServer</Button></Link>
       <Link to={"tasks"}><Button size={"large"}>Tasks</Button></Link>
+      <Link to={"router"}><Button size={"large"}>Router</Button></Link>
       <Link to={"settings"}><Button size={"large"}>Settings</Button></Link>
     </Stack>
   )

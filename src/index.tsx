@@ -18,6 +18,7 @@ import BackdropComp from "./components/backdrop"
 import Tasks from "./funcs/tasks"
 import {ThemeProvider} from "@mui/material"
 import theme from "./mytheme"
+import Myrouter from "./funcs/myrouter"
 
 ReactDOM.render(
   <React.StrictMode>
@@ -28,6 +29,7 @@ ReactDOM.render(
           <Route path="/music" element={<Music/>}/>
           <Route path="/fserver" element={<FServer/>}/>
           <Route path="/tasks" element={<Tasks/>}/>
+          <Route path="/router" element={<Myrouter/>}/>
           <Route path="/settings" element={<Settings/>}/>
         </Routes>
       </HashRouter>

@@ -1,6 +1,5 @@
 // API 返回类型
 export interface JResult<T> {
-  success: boolean;
   code: number;
   msg: string;
   data: T;

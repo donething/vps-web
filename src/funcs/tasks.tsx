@@ -69,7 +69,7 @@ const Tasks = () => {
   }, [])
 
   return (
-    <Stack>
+    <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%", overflowY: "hidden"}}>
       <AlbumsStatus sx={{width: {sm: 300}}}/>
     </Stack>
   )
