@@ -44,15 +44,15 @@ const MyRouter = (): JSX.Element => {
 
   return (
     <Stack className={"main"} sx={{bgcolor: "background.paper"}}>
-      <Card sx={{width: {sm: 350}}}>
+      <Card sx={{width: {sm: 390}}}>
         <CardContent>
           <Typography sx={{mb: 1.5}}>路由器信息</Typography>
           <Stack direction={"row"} gap={1}>
-            <span>IPv4:</span><span>{ipInfo.ipv4}
-          </span></Stack>
+            <span>IPv4:</span><span>{ipInfo.ipv4}</span>
+          </Stack>
           <Stack direction={"row"} gap={1} sx={{mt: 1}}>
-            <span>IPv6:</span><span>{ipInfo.ipv6}
-          </span></Stack>
+            <span>IPv6:</span><span>{ipInfo.ipv6}</span>
+          </Stack>
         </CardContent>
 
         <CardActions>
