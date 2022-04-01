@@ -37,7 +37,10 @@ const MyRouter = (): JSX.Element => {
       if (!ipInfoObj) {
         return
       }
-      setIPInfo(ipInfoObj.data)
+
+      if (ipInfoObj?.data) {
+        setIPInfo(ipInfoObj.data)
+      }
     }
 
     // 执行
