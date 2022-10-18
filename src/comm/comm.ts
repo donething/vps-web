@@ -19,8 +19,7 @@ export const getJSON = async <T>(
   // 追加授权码
   let p = path + (path.indexOf("?") === -1 ? "?" : "&") + `t=${t}&s=${s}`
 
-  let resp = await request(p, data)
-    .catch(e => console.error(`执行网络请求 "${path}" 出错`, e))
+  let resp = await request(p, data).catch(e => console.error(`执行网络请求 "${path}" 出错`, e))
   // 网络出错
   if (!resp) {
     setSbMsg && setSbMsg(prev => ({
