@@ -5,7 +5,7 @@ import {
   TextField
 } from "@mui/material"
 import {HTMLAttributes} from "react"
-import {HighlightOffOutlined} from "@mui/icons-material"
+import CloseIcon from '@mui/icons-material/Close'
 
 // 自动完成输入框组件
 const AutocompleteComp = (props: {
@@ -21,11 +21,11 @@ const AutocompleteComp = (props: {
                     return (
                       <ListItem {...ps} >
                         <ListItemText primary={option} onClick={() => props.onEnter(option)}/>
-                        <IconButton onClick={e => {
+                        <IconButton title={"删除"} onClick={e => {
                           e.stopPropagation()
                           props.onDelOption && props.onDelOption(option)
                         }}>
-                          <HighlightOffOutlined/>
+                          <CloseIcon/>
                         </IconButton>
                       </ListItem>
                     )
