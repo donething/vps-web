@@ -232,7 +232,7 @@ const Content = (props: { sx?: SxProps, keyword: string, ops: Ops }) => {
       <Fragment>
         {songList.map((song, key) => <SongItem key={key} song={song}/>)}
         {(songList.length !== 0 && songList.length === total) &&
-          <Alert severity="success">已显示所有结果</Alert>
+          <Alert severity="success" sx={{width: "-webkit-fill-available"}}>已显示所有结果</Alert>
         }
       </Fragment>} onLoadNext={() => {
       if (songList.length < total) {

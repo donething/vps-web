@@ -3886,10 +3886,10 @@ dns-packet@^5.2.2:
   dependencies:
     "@leichtgewicht/ip-codec" "^2.0.1"
 
-do-comps@^0.2.40:
-  version "0.2.40"
-  resolved "https://registry.yarnpkg.com/do-comps/-/do-comps-0.2.40.tgz#5e801363b1cf59098520be541384d0100e96c4ea"
-  integrity sha512-m8vfihWP2B2fg8Z/gbNHei5Y5Ew+v+MHbcri4hYjUnHBXn1avP82laPlHIKrWhx9Fua7ZWIl+Ake36op1XKF8A==
+do-comps@^0.2.42:
+  version "0.2.42"
+  resolved "https://registry.yarnpkg.com/do-comps/-/do-comps-0.2.42.tgz#faa44871334a837bd150c51d3f75cdd2bbc75d64"
+  integrity sha512-9yrI9dXBmhKqUBPk8VvJoTGs/Cqtf9aOGruClRa3nl2FklbKXEeQDJ6XPDD5nKMvn9Y8wSb6CVTUBOJWLIm53Q==
   dependencies:
     use-between "^1.3.4"
 
