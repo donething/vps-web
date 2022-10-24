@@ -218,8 +218,7 @@ const onDelFile = (
           open: true,
           message: `删除文件失败：${obj?.msg}`,
           severity: "error",
-          autoHideDuration: undefined,
-          onClose: () => console.log("")
+          autoHideDuration: undefined
         })
         return
       }
@@ -287,8 +286,7 @@ const FList = (props: { sx?: SxProps }) => {
         open: true,
         message: `读取路径失败：${obj?.msg}`,
         severity: "error",
-        autoHideDuration: undefined,
-        onClose: () => console.log("")
+        autoHideDuration: undefined
       })
       return
     }
@@ -353,8 +351,7 @@ const FServer = () => {
                         open: true,
                         message: msg,
                         severity: err ? "error" : "success",
-                        autoHideDuration: err ? undefined : 6000,
-                        onClose: err ? () => console.log("") : undefined
+                        autoHideDuration: err ? undefined : 3000
                       })
 
                       let newStatus = [...filesStatus]

@@ -38,8 +38,7 @@ export const getJSON = async <T>(
       open: true,
       message: `执行网络请求 "${path}" 出错`,
       severity: "error",
-      autoHideDuration: undefined,
-      onClose: () => console.log("")
+      autoHideDuration: undefined
     })
     return undefined
   }
@@ -51,8 +50,7 @@ export const getJSON = async <T>(
       open: true,
       message: "解析响应为 JSON 对象时出错",
       severity: "error",
-      autoHideDuration: undefined,
-      onClose: () => console.log("")
+      autoHideDuration: undefined
     })
     return undefined
   }
@@ -64,8 +62,7 @@ export const getJSON = async <T>(
       open: true,
       message: `获取远程数据失败：${obj.msg}`,
       severity: "error",
-      autoHideDuration: undefined,
-      showCloseBn: true
+      autoHideDuration: undefined
     })
     return obj
   }

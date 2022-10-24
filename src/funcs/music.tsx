@@ -211,8 +211,7 @@ const Content = (props: { sx?: SxProps, keyword: string, ops: Ops }) => {
         open: true,
         message: "无法转换搜索结果数字符串为数字",
         severity: "error",
-        autoHideDuration: undefined,
-        onClose: () => console.log("已手动关闭 Snackbar")
+        autoHideDuration: undefined
       })
       return
     }
