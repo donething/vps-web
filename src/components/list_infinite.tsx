@@ -26,9 +26,10 @@ const ListInfinite = (props: {
 }) => {
   // 避免多次误触发滚动，再一次滚动操作后，需要等待一会才能再次触发
   const waitingRef = useRef(false)
+  const idRef = useRef("do_list_" + Date.now() + "_" + Math.floor(Math.random() * 1000000))
 
   return (
-    <List id="do-list-infinite" sx={{...props.sx, overflowY: "auto"}} {...props.ps} onWheel={e => {
+    <List id={idRef.current} sx={{...props.sx, overflowY: "auto"}} {...props.ps} onWheel={e => {
       // 判断是否处于等待间隔中，是就直接退出
       if (waitingRef.current) return
 
@@ -37,7 +38,8 @@ const ListInfinite = (props: {
       setTimeout(() => waitingRef.current = false, props.waitInterval || 500)
 
       // 判断并执行响应的加载操作
-      let elem = (e.target as HTMLElement).closest("#do-list-infinite") as HTMLElement
+      let elem = (e.target as HTMLElement).closest(`#${idRef.current}`) as HTMLElement
+
       // 加载之前
       if (props.onLoadPrev && e.deltaY < 0 && elem.scrollTop <= (props.toTop || 300)) {
         props.onLoadPrev(e)
