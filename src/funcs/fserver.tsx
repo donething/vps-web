@@ -18,7 +18,7 @@ import {
 import React, {Fragment, useEffect, useState} from "react"
 import {useBetween} from "use-between"
 import {FileInfo} from "../comm/typedef"
-import {LS_AUTH_KEY, LS_Trans_KEY} from "./settings"
+import {LS_Trans_KEY} from "./settings"
 import {SnackbarMsg, useSnackbar} from "../components/snackbar"
 import FolderOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
 import FileOutlinedIcon from '@mui/icons-material/FileOpenOutlined'
@@ -30,17 +30,44 @@ import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
 import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
 import FilesUpload from "../components/files_upload"
 import {HighlightOffOutlined} from "@mui/icons-material"
-import {getJSON} from "../comm/comm"
+import {genAuthHeaders, getJSON} from "../comm/comm"
 
 // 标签
 const TAG = "[FServer]"
 
-// 导航栏的路径，共享
-const useNavbarPath = () => {
+// 共享
+const useValues = () => {
+  // 当前路径
   const [paths, setPaths] = useState<Array<string>>(["."])
 
-  return {paths, setPaths}
+  // 当前目录的文件列表，用于渲染界面
+  const [files, setFiles] = useState<Array<FileInfo>>([])
+
+  // 文件上传状态的开关
+  const [fStatusOpen, setFStatusOpen] = useState(false)
+
+  // 文件上传状态的信息列表
+  const [filesStatus, setFilesStatus] = useState<Array<UpStatusType>>([])
+
+  // 上传文件的验证请求头
+  const [headers, setHeaders] = useState(new Headers({}))
+
+  return {
+    paths,
+    setPaths,
+    files,
+    setFiles,
+    fStatusOpen,
+    setFStatusOpen,
+    filesStatus,
+    setFilesStatus,
+    headers,
+    setHeaders
+  }
 }
+
+// 共享
+const useSharedValues = () => useBetween(useValues)
 
 // 菜单
 const Menus = () => {
@@ -48,14 +75,14 @@ const Menus = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
   // 共享 显示上传状态组件
-  const {setFStatusOpen} = useBetween(useFileUpStatus)
+  const {setFStatusOpen, setHeaders} = useSharedValues()
 
   // 点击了菜单弹出菜单列表
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget)
   }
   // 点击率菜单列表项
-  const handleClose = (action: string) => {
+  const handleClose = async (action: string) => {
     // 先关闭菜单
     setAnchorEl(null)
 
@@ -70,6 +97,7 @@ const Menus = () => {
         window.open(localStorage.getItem(LS_Trans_KEY) || "", "_blank")
         break
       case "UP_FILES":
+        setHeaders(await genAuthHeaders());
         (document.querySelector("#UP_FILES") as HTMLElement).click()
         break
       case "UD_Progress":
@@ -105,7 +133,7 @@ const Menus = () => {
 
 // 导航栏组件
 const Navbar = () => {
-  const {paths, setPaths} = useBetween(useNavbarPath)
+  const {paths, setPaths} = useSharedValues()
 
   return (
     <Stack>
@@ -132,18 +160,9 @@ class UpStatusType {
   status: boolean | string = false
 }
 
-// 共享文件上传的状态
-const useFileUpStatus = () => {
-  // 文件上传状态的开关、列表
-  const [fStatusOpen, setFStatusOpen] = useState(false)
-  const [filesStatus, setFilesStatus] = useState<Array<UpStatusType>>([])
-
-  return {fStatusOpen, setFStatusOpen, filesStatus, setFilesStatus}
-}
-
 // 文件上传状态的组件
 const FilesStatus = () => {
-  const {fStatusOpen, setFStatusOpen, filesStatus} = useBetween(useFileUpStatus)
+  const {fStatusOpen, setFStatusOpen, filesStatus} = useSharedValues()
 
   const getSeverity = (status: boolean | string) => status === true ? "success" :
     status === false ? "info" : "error"
@@ -153,7 +172,7 @@ const FilesStatus = () => {
   return (
     <Drawer anchor={"top"} open={fStatusOpen}
             onClose={() => setFStatusOpen(false)}>
-      <Stack>
+      <Stack divider={<Divider/>}>
         <div style={{padding: "10px 16px", margin: "auto"}}>上传文件的状态</div>
         {
           filesStatus.map((item, index) =>
@@ -221,7 +240,7 @@ const onDelFile = (
 // 文件列表项
 const FItem = (props: { file: FileInfo }) => {
   // 导航栏路径
-  const {paths, setPaths} = useBetween(useNavbarPath)
+  const {paths, setPaths} = useSharedValues()
   // 共享 Snackbar
   const {setSbMsg} = useBetween(useSnackbar)
   // 对话框共享
@@ -229,8 +248,7 @@ const FItem = (props: { file: FileInfo }) => {
 
   return (
     <ListItem divider sx={{padding: 0}}>
-      <ListItemButton onClick={() => props.file.is_dir ?
-        setPaths(prev => [...prev, props.file.name]) :
+      <ListItemButton onClick={() => props.file.is_dir ? setPaths(prev => [...prev, props.file.name]) :
         onDownloadFile(props.file.name, `${paths.join("/")}/${props.file.name}`)
       }>
         <ListItemAvatar>
@@ -245,8 +263,8 @@ const FItem = (props: { file: FileInfo }) => {
       </ListItemButton>
 
       <IconButton onClick={() =>
-        onDelFile(props.file.name, `${paths.join("/")}/${props.file.name}`,
-          setPaths, setSbMsg, setDialogMsg)}><HighlightOffOutlined/>
+        onDelFile(props.file.name, `${paths.join("/")}/${props.file.name}`, setPaths, setSbMsg, setDialogMsg)}>
+        <HighlightOffOutlined/>
       </IconButton>
     </ListItem>
   )
@@ -254,41 +272,38 @@ const FItem = (props: { file: FileInfo }) => {
 
 // 文件列表组件
 const FList = (props: { sx?: SxProps }) => {
-  // 当前目录的文件列表，用于渲染界面
-  const [files, setFiles] = useState<Array<FileInfo>>([])
-
   // 共享当前导航路径
-  const {paths} = useBetween(useNavbarPath)
+  const {paths, files, setFiles} = useSharedValues()
   // 共享 Snackbar
   const {setSbMsg} = useBetween(useSnackbar)
 
-  // 获取文件列表
-  useEffect(() => {
-    // 获取
-    const obtain = async () => {
-      let path = paths.join('/')
-      console.log(TAG, `读取路径 "${path}"`)
-      path = `/api/file/list?path=${encodeURIComponent(path)}`
-      let obj = await getJSON<Array<FileInfo>>(path, undefined, setSbMsg)
-      if (!obj) return
+  // 获取
+  const obtain = async () => {
+    let path = paths.join('/')
+    console.log(TAG, `读取路径 "${path}"`)
+    path = `/api/file/list?path=${encodeURIComponent(path)}`
+    let obj = await getJSON<Array<FileInfo>>(path, undefined, setSbMsg)
+    if (!obj) return
 
-      // 获取失败
-      if (obj.code !== 0) {
-        console.log(TAG, "读取路径失败：", obj.msg)
-        setSbMsg(prev => ({
-          ...prev,
-          open: true,
-          message: `读取路径失败：${obj?.msg}`,
-          severity: "error",
-          autoHideDuration: undefined,
-          onClose: () => console.log("")
-        }))
-        return
-      }
-
-      setFiles(obj.data)
+    // 获取失败
+    if (obj.code !== 0) {
+      console.log(TAG, "读取路径失败：", obj.msg)
+      setSbMsg(prev => ({
+        ...prev,
+        open: true,
+        message: `读取路径失败：${obj?.msg}`,
+        severity: "error",
+        autoHideDuration: undefined,
+        onClose: () => console.log("")
+      }))
+      return
     }
 
+    setFiles(obj.data)
+  }
+
+  // 获取文件列表
+  useEffect(() => {
     // 执行
     obtain()
   }, [paths])
@@ -302,13 +317,11 @@ const FList = (props: { sx?: SxProps }) => {
 
 // 文件管理组件
 const FServer = () => {
-  // 授权验证码
-  const headers = {"Authorization": localStorage.getItem(LS_AUTH_KEY) || ""}
-
   // 文件上传状态
-  const {filesStatus, setFilesStatus} = useBetween(useFileUpStatus)
+  const {setPaths, filesStatus, setFilesStatus, headers} = useSharedValues()
   // 共享 Snackbar
   const {setSbMsg} = useBetween(useSnackbar)
+
 
   useEffect(() => {
     document.title = "文件管理"
@@ -322,7 +335,7 @@ const FServer = () => {
 
       <FilesUpload id={"UP_FILES"} apiURL={"/api/file/upload"} headers={headers}
                    onUpload={name => setFilesStatus(prev => {
-                     setSbMsg(prev => ({...prev, open: true, message: `开始上传文件"${name}"...`}))
+                     setSbMsg({open: true, severity: "info", message: `开始上传 "${name}"...`})
                      // 在上传列表中增加文件
                      let newStatus = [...prev]
                      let index = newStatus.findIndex(item => item.name === name)
@@ -335,10 +348,13 @@ const FServer = () => {
                      current[0].status = false
                      return [...newStatus, ...current]
                    })}
+
                    onFinish={(name, err) => {
                      // 文件上传成功、失败的处理
                      const msg = `上传文件"${name}" ` + (err ? `失败：${err.toString()}` : "成功")
                      console.log(TAG, msg)
+
+                     setPaths(prev => [...prev])
                      setSbMsg(prev => ({
                        ...prev,
                        open: true,

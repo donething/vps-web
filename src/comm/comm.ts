@@ -5,21 +5,34 @@ import React from "react"
 import {SnackbarMsg} from "../components/snackbar"
 import {sha256} from "do-utils/dist/text"
 
+// 生成授权码
+export const genAuth = async () => {
+  let auth = localStorage.getItem(LS_AUTH_KEY) || ""
+  let t = new Date().getTime()
+  let s = await sha256(auth + t + auth)
+  return {t, s}
+}
+
+// 生成含授权码的请求头
+export const genAuthHeaders = async () => {
+  let {t, s} = await genAuth()
+  return new Headers({
+    "t": t.toString(),
+    "s": s
+  })
+}
+
 // 执行网络请求，适配当前界面
 export const getJSON = async <T>(
   path: string,
   data: string | object | FormData | undefined,
   setSbMsg?: React.Dispatch<React.SetStateAction<SnackbarMsg>>
 ): Promise<JResult<T> | undefined> => {
-  // 操作授权码
-  let auth = localStorage.getItem(LS_AUTH_KEY) || ""
-  let t = new Date().getTime()
-  let s = await sha256(auth + t + auth)
+  let headers = await genAuthHeaders()
 
-  // 追加授权码
-  let p = path + (path.indexOf("?") === -1 ? "?" : "&") + `t=${t}&s=${s}`
-
-  let resp = await request(p, data).catch(e => console.error(`执行网络请求 "${path}" 出错`, e))
+  let resp = await request(path, data, {headers: headers}).catch(e =>
+    console.error(`执行网络请求 "${path}" 出错`, e)
+  )
   // 网络出错
   if (!resp) {
     setSbMsg && setSbMsg(prev => ({
