@@ -16,7 +16,7 @@ import Tasks from "./funcs/tasks"
 import {ThemeProvider} from "@mui/material"
 import theme from "./mytheme"
 import Myrouter from "./funcs/myrouter"
-import {DoSnackbar, DoBackdrop, DoDialog} from "do-comps"
+import {DoSnackbar, DoDialog} from "do-comps"
 
 const container = document.getElementById('root')
 const root = createRoot(container!)
