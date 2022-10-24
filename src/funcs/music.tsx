@@ -10,12 +10,8 @@ import {
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import PlayCircleOutlineOutlinedIcon from '@mui/icons-material/PlayCircleOutlineOutlined'
 import React, {Fragment, useEffect, useState} from "react"
-import {useBetween} from "use-between"
-import {useSnackbar} from "../components/snackbar"
-import ListInfinite from "../components/list_infinite"
-import AutocompleteComp from "../components/autocomplete"
-import {useBackdrop} from "../components/backdrop"
 import {getJSON} from "../comm/comm"
+import {DoAutocomplete, useSharedBackdrop, DoList, useSharedSnackbar} from "do-comps"
 
 // 标签
 const TAG = "[Music]"
@@ -105,16 +101,17 @@ const Header = (props: {
 
   return (
     <Stack sx={{...props.sx}}>
-      <AutocompleteComp label={"搜索 歌曲、歌手、歌单、专辑"} options={historyWords}
-                        onEnter={option => onSearch(option)}
-                        onDelOption={option => setHistoryWords(prev => {
-                          // 删除指定记录
-                          let his = [...prev]
-                          let index = his.findIndex((v: string) => v === option)
-                          index !== -1 && his.splice(index, 1)
-                          localStorage.setItem(LS_HIST_KEY, JSON.stringify(his))
-                          return his
-                        })}/>
+      <DoAutocomplete label={"搜索 歌曲、歌手、歌单、专辑"} options={historyWords}
+                      onEnter={option => onSearch(option)}
+                      onDelOption={option => setHistoryWords(prev => {
+                        // 删除指定记录
+                        let his = [...prev]
+                        let index = his.findIndex((v: string) => v === option)
+                        index !== -1 && his.splice(index, 1)
+                        localStorage.setItem(LS_HIST_KEY, JSON.stringify(his))
+                        return his
+                      })}
+      />
 
       <FormGroup row>
         <FormControlLabel label="歌曲" control={
@@ -177,9 +174,9 @@ const Content = (props: { sx?: SxProps, keyword: string, ops: Ops }) => {
   const [total, setTotal] = useState(0)
 
   // 共享 Snackbar
-  const {setSbMsg} = useBetween(useSnackbar)
+  const {showSb} = useSharedSnackbar()
   // 共享 Backdrop
-  const {setBackdropMsg} = useBetween(useBackdrop)
+  const {showBackdrop} = useSharedBackdrop()
 
   // 开始新的搜索，初始化数据
   useEffect(() => {
@@ -195,44 +192,38 @@ const Content = (props: { sx?: SxProps, keyword: string, ops: Ops }) => {
     const obtain = async () => {
       // 搜索
       console.log(TAG, `搜索歌曲"${props.keyword}"，第 ${page} 页`)
-      setBackdropMsg(prev => ({...prev, bg: "transparent", open: true}))
+      showBackdrop({open: true, bg: "transparent"})
 
       let path = "/api/music/search?page=" + page + "&keyword=" +
         encodeURIComponent(props.keyword) + "&ops=" +
         encodeURIComponent(JSON.stringify(props.ops))
-      let obj = await getJSON<SMData>(path, undefined, setSbMsg)
+      let obj = await getJSON<SMData>(path, undefined, showSb)
       if (!obj) return
 
       // 没有搜到匹配的歌曲
       if (!obj.data.payload || obj.data.payload.length === 0) {
         console.log(TAG, "没有搜到匹配的歌曲")
-        setBackdropMsg(prev => ({...prev, open: false}))
-        setSbMsg(prev => ({
-          ...prev,
-          open: true,
-          message: "没有搜到匹配的歌曲",
-          severity: "info"
-        }))
+        showBackdrop({open: false})
+        showSb({open: true, message: "没有搜到匹配的歌曲", severity: "info"})
         return
       }
 
       // 填充
       setSongList(prev => [...prev, ...obj?.data?.payload || []])
 
-      setBackdropMsg(prev => ({...prev, open: false}))
+      showBackdrop({open: false})
 
       // 设置总搜索结果数
       let tt = Number(obj.data.total)
       if (isNaN(tt)) {
         console.log(TAG, "无法转换搜索结果数字符串为数字")
-        setSbMsg(prev => ({
-          ...prev,
+        showSb({
           open: true,
           message: "无法转换搜索结果数字符串为数字",
           severity: "error",
           autoHideDuration: undefined,
           onClose: () => console.log("已手动关闭 Snackbar")
-        }))
+        })
         return
       }
       setTotal(tt)
@@ -243,7 +234,7 @@ const Content = (props: { sx?: SxProps, keyword: string, ops: Ops }) => {
   }, [props.keyword, page])
 
   return (
-    <ListInfinite sx={{...props.sx}} content={
+    <DoList sx={{...props.sx}} content={
       <Fragment>
         {songList.map((song, key) => <SongItem key={key} song={song}/>)}
         {(songList.length !== 0 && songList.length === total) &&

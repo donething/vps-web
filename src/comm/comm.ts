@@ -1,9 +1,8 @@
-import {LS_AUTH_KEY} from "../funcs/settings"
 import {request} from "do-utils"
 import {JResult} from "./typedef"
-import React from "react"
-import {SnackbarMsg} from "../components/snackbar"
+import {DoSnackbarProps} from "do-comps"
 import {sha256} from "do-utils/dist/text"
+import {LS_AUTH_KEY} from "../funcs/settings"
 
 // 生成授权码
 export const genAuth = async () => {
@@ -26,7 +25,7 @@ export const genAuthHeaders = async () => {
 export const getJSON = async <T>(
   path: string,
   data: string | object | FormData | undefined,
-  setSbMsg?: React.Dispatch<React.SetStateAction<SnackbarMsg>>
+  showSb?: (ps: DoSnackbarProps) => void
 ): Promise<JResult<T> | undefined> => {
   let headers = await genAuthHeaders()
 
@@ -35,42 +34,39 @@ export const getJSON = async <T>(
   )
   // 网络出错
   if (!resp) {
-    setSbMsg && setSbMsg(prev => ({
-      ...prev,
+    showSb && showSb({
       open: true,
       message: `执行网络请求 "${path}" 出错`,
       severity: "error",
       autoHideDuration: undefined,
       onClose: () => console.log("")
-    }))
+    })
     return undefined
   }
 
   let obj: JResult<T> = await resp.json()
     .catch(e => console.error(`解析响应为 JSON 对象时出错`, e))
   if (!obj) {
-    setSbMsg && setSbMsg(prev => ({
-      ...prev,
+    showSb && showSb({
       open: true,
       message: "解析响应为 JSON 对象时出错",
       severity: "error",
       autoHideDuration: undefined,
       onClose: () => console.log("")
-    }))
+    })
     return undefined
   }
 
   // 获取失败
   if (obj.code !== 0) {
     console.log(`获取远程数据失败：`, obj.msg)
-    setSbMsg && setSbMsg(prev => ({
-      ...prev,
+    showSb && showSb({
       open: true,
       message: `获取远程数据失败：${obj.msg}`,
       severity: "error",
       autoHideDuration: undefined,
-      onClose: () => console.log("")
-    }))
+      showCloseBn: true
+    })
     return obj
   }
 

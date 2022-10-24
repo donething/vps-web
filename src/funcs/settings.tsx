@@ -1,7 +1,6 @@
 import {useEffect, useState} from "react"
 import {Button, FormControl, InputLabel, OutlinedInput, Stack} from "@mui/material"
-import {useBetween} from "use-between"
-import {useSnackbar} from "../components/snackbar"
+import {useSharedSnackbar} from "do-comps"
 
 // 标签
 const TAG = "[Settings]"
@@ -19,7 +18,7 @@ const Settings = (): JSX.Element => {
   const [trans, setTrans] = useState("")
 
   // 共享 Snackbar
-  const {setSbMsg} = useBetween(useSnackbar)
+  const {showSb} = useSharedSnackbar()
 
   useEffect(() => {
     document.title = "设置选项"
@@ -56,12 +55,7 @@ const Settings = (): JSX.Element => {
         localStorage.setItem(LS_AUTH_KEY, auth)
         localStorage.setItem(LS_Trans_KEY, trans)
         console.log(TAG, "已保存设置")
-        setSbMsg(prev => ({
-          ...prev,
-          open: true,
-          message: "已保存设置",
-          severity: "success"
-        }))
+        showSb({open: true, message: "已保存设置", severity: "success"})
       }}>保存</Button>
     </Stack>
   )

@@ -1,10 +1,9 @@
 import {useEffect, useState} from "react"
 import {Button, Card, CardActions, CardContent, Stack, Typography} from "@mui/material"
-import {useBetween} from "use-between"
-import {useSnackbar} from "../components/snackbar"
 import {getJSON} from "../comm/comm"
 import {sha256} from "do-utils/dist/text"
 import {LS_AUTH_KEY} from "./settings"
+import {useSharedSnackbar} from "do-comps"
 
 // 标签
 const TAG = "[MyRouter]"
@@ -25,23 +24,24 @@ const MyRouter = (): JSX.Element => {
   const [ipInfo, setIPInfo] = useState(new IPInfo())
 
   // 共享 Snackbar
-  const {setSbMsg} = useBetween(useSnackbar)
+  const {showSb} = useSharedSnackbar()
+
+  // 初始化
+  const init = async () => {
+    console.log(TAG, "读取路由器的信息...")
+    // 路由器的公网 IP 信息
+    let ipInfoObj = await getJSON<IPInfo>("/api/router/ip/get", undefined, showSb)
+    if (!ipInfoObj) {
+      return
+    }
+
+    if (ipInfoObj?.data) {
+      setIPInfo(ipInfoObj.data)
+    }
+  }
 
   useEffect(() => {
     document.title = "管理路由器"
-
-    const init = async () => {
-      console.log(TAG, "读取路由器的信息...")
-      // 路由器的公网 IP 信息
-      let ipInfoObj = await getJSON<IPInfo>("/api/router/ip/get", undefined, setSbMsg)
-      if (!ipInfoObj) {
-        return
-      }
-
-      if (ipInfoObj?.data) {
-        setIPInfo(ipInfoObj.data)
-      }
-    }
 
     // 执行
     init()

@@ -2,8 +2,7 @@ import {useEffect, useState} from "react"
 import {Alert, Card, CardContent, IconButton, Stack, SxProps, Typography} from "@mui/material"
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined'
 import {getJSON} from "../comm/comm"
-import {useBetween} from "use-between"
-import {useSnackbar} from "../components/snackbar"
+import {useSharedSnackbar} from "do-comps"
 
 // 图集下载状态
 type AlbumsStatusType = {
@@ -29,20 +28,19 @@ const AlbumsStatus = (props: { sx?: SxProps }): JSX.Element => {
   const [count, setCount] = useState(0)
 
   // 共享 Snackbar
-  const {setSbMsg} = useBetween(useSnackbar)
+  const {showSb} = useSharedSnackbar()
 
   useEffect(() => {
     // 获取图集下载状态
     const init = async () => {
       let obj = await getJSON<{ [id: string]: AlbumsStatusType }>("/api/pics/dl/status",
-        undefined, setSbMsg)
+        undefined, showSb)
       if (obj?.code === 0) {
         setStatusMap(obj.data)
       }
 
       // 获取需要重试的图集数
-      let countObj = await getJSON<TotalCountInfo>("/api/pics/dl/count",
-        undefined, setSbMsg)
+      let countObj = await getJSON<TotalCountInfo>("/api/pics/dl/count", undefined, showSb)
       if (countObj?.code === 0) {
         setTotalCountInfo(countObj.data)
       }

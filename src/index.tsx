@@ -12,17 +12,19 @@ import App from "./App"
 import Music from "./funcs/music"
 import Settings from "./funcs/settings"
 import FServer from "./funcs/fserver"
-import SnackbarComp from "./components/snackbar"
-import DialogComp from "./components/dialog"
-import BackdropComp from "./components/backdrop"
 import Tasks from "./funcs/tasks"
 import {ThemeProvider} from "@mui/material"
 import theme from "./mytheme"
 import Myrouter from "./funcs/myrouter"
+import {DoSnackbar, DoBackdrop, DoDialog} from "do-comps"
 
 ReactDOM.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
+      <DoSnackbar/>
+      <DoDialog/>
+      <DoBackdrop/>
+
       <HashRouter>
         <Routes>
           <Route path="/" element={<App/>}/>
@@ -33,10 +35,6 @@ ReactDOM.render(
           <Route path="/settings" element={<Settings/>}/>
         </Routes>
       </HashRouter>
-
-      <SnackbarComp/>
-      <DialogComp/>
-      <BackdropComp/>
     </ThemeProvider>
   </React.StrictMode>,
   document.getElementById('root')
