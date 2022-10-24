@@ -30,22 +30,22 @@ const AlbumsStatus = (props: { sx?: SxProps }): JSX.Element => {
   // 共享 Snackbar
   const {showSb} = useSharedSnackbar()
 
-  useEffect(() => {
-    // 获取图集下载状态
-    const init = async () => {
-      let obj = await getJSON<{ [id: string]: AlbumsStatusType }>("/api/pics/dl/status",
-        undefined, showSb)
-      if (obj?.code === 0) {
-        setStatusMap(obj.data)
-      }
-
-      // 获取需要重试的图集数
-      let countObj = await getJSON<TotalCountInfo>("/api/pics/dl/count", undefined, showSb)
-      if (countObj?.code === 0) {
-        setTotalCountInfo(countObj.data)
-      }
+  // 获取图集下载状态
+  const init = async () => {
+    let obj = await getJSON<{ [id: string]: AlbumsStatusType }>("/api/pics/dl/status",
+      undefined, showSb)
+    if (obj?.code === 0) {
+      setStatusMap(obj.data)
     }
 
+    // 获取需要重试的图集数
+    let countObj = await getJSON<TotalCountInfo>("/api/pics/dl/count", undefined, showSb)
+    if (countObj?.code === 0) {
+      setTotalCountInfo(countObj.data)
+    }
+  }
+
+  useEffect(() => {
     init()
   }, [count])
 

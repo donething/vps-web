@@ -11,7 +11,7 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import PlayCircleOutlineOutlinedIcon from '@mui/icons-material/PlayCircleOutlineOutlined'
 import React, {Fragment, useEffect, useState} from "react"
 import {getJSON} from "../comm/comm"
-import {DoAutocomplete, useSharedBackdrop, DoList, useSharedSnackbar} from "do-comps"
+import {DoAutocomplete, DoList, useSharedSnackbar} from "do-comps"
 
 // 标签
 const TAG = "[Music]"
@@ -175,8 +175,6 @@ const Content = (props: { sx?: SxProps, keyword: string, ops: Ops }) => {
 
   // 共享 Snackbar
   const {showSb} = useSharedSnackbar()
-  // 共享 Backdrop
-  const {showBackdrop} = useSharedBackdrop()
 
   // 开始新的搜索，初始化数据
   useEffect(() => {
@@ -185,49 +183,45 @@ const Content = (props: { sx?: SxProps, keyword: string, ops: Ops }) => {
     setSongList([])
   }, [props.keyword])
 
+  const obtain = async () => {
+    // 搜索
+    console.log(TAG, `搜索歌曲"${props.keyword}"，第 ${page} 页`)
+
+    let path = "/api/music/search?page=" + page + "&keyword=" +
+      encodeURIComponent(props.keyword) + "&ops=" +
+      encodeURIComponent(JSON.stringify(props.ops))
+    let obj = await getJSON<SMData>(path, undefined, showSb)
+    if (!obj) return
+
+    // 没有搜到匹配的歌曲
+    if (!obj.data.payload || obj.data.payload.length === 0) {
+      console.log(TAG, "没有搜到匹配的歌曲")
+      showSb({open: true, message: "没有搜到匹配的歌曲", severity: "info"})
+      return
+    }
+
+    // 填充
+    setSongList(prev => [...prev, ...obj?.data?.payload || []])
+
+    // 设置总搜索结果数
+    let tt = Number(obj.data.total)
+    if (isNaN(tt)) {
+      console.log(TAG, "无法转换搜索结果数字符串为数字")
+      showSb({
+        open: true,
+        message: "无法转换搜索结果数字符串为数字",
+        severity: "error",
+        autoHideDuration: undefined,
+        onClose: () => console.log("已手动关闭 Snackbar")
+      })
+      return
+    }
+    setTotal(tt)
+  }
+
   // 执行搜索
   useEffect(() => {
     if (!props.keyword) return
-
-    const obtain = async () => {
-      // 搜索
-      console.log(TAG, `搜索歌曲"${props.keyword}"，第 ${page} 页`)
-      showBackdrop({open: true, bg: "transparent"})
-
-      let path = "/api/music/search?page=" + page + "&keyword=" +
-        encodeURIComponent(props.keyword) + "&ops=" +
-        encodeURIComponent(JSON.stringify(props.ops))
-      let obj = await getJSON<SMData>(path, undefined, showSb)
-      if (!obj) return
-
-      // 没有搜到匹配的歌曲
-      if (!obj.data.payload || obj.data.payload.length === 0) {
-        console.log(TAG, "没有搜到匹配的歌曲")
-        showBackdrop({open: false})
-        showSb({open: true, message: "没有搜到匹配的歌曲", severity: "info"})
-        return
-      }
-
-      // 填充
-      setSongList(prev => [...prev, ...obj?.data?.payload || []])
-
-      showBackdrop({open: false})
-
-      // 设置总搜索结果数
-      let tt = Number(obj.data.total)
-      if (isNaN(tt)) {
-        console.log(TAG, "无法转换搜索结果数字符串为数字")
-        showSb({
-          open: true,
-          message: "无法转换搜索结果数字符串为数字",
-          severity: "error",
-          autoHideDuration: undefined,
-          onClose: () => console.log("已手动关闭 Snackbar")
-        })
-        return
-      }
-      setTotal(tt)
-    }
 
     // 获取
     obtain()
