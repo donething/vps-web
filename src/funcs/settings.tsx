@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {Button, FormControl, InputLabel, OutlinedInput, Stack} from "@mui/material"
 import {useSharedSnackbar} from "do-comps"
 
@@ -11,7 +11,7 @@ export const LS_AUTH_KEY = "auth_key"
 export const LS_Trans_KEY = "transmission_url"
 
 // Settings 设置
-const Settings = (): JSX.Element => {
+const Settings = React.memo((): JSX.Element => {
   // 授权码
   const [auth, setAuth] = useState("")
   // 磁力工具的地址
@@ -59,6 +59,6 @@ const Settings = (): JSX.Element => {
       }}>保存</Button>
     </Stack>
   )
-}
+})
 
 export default Settings

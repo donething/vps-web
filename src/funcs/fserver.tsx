@@ -13,7 +13,7 @@ import {
   MenuItem, Skeleton,
   Stack,
   SvgIcon,
-  SxProps,
+  Typography,
 } from "@mui/material"
 import React, {Fragment, useEffect, useState} from "react"
 import {useBetween} from "use-between"
@@ -33,28 +33,29 @@ import {DoSnackbarProps, DoDialogProps, useSharedSnackbar, useSharedDialog, DoFi
 // 标签
 const TAG = "[FServer]"
 
+// 文件上传状态的类型
+type UpStatusType = {
+  name: string
+  status: boolean | string
+}
+
 // 共享
 const useValues = () => {
   // 当前路径
-  const [paths, setPaths] = useState<Array<string>>(["."])
-
-  // 当前目录的文件列表，用于渲染界面
-  const [files, setFiles] = useState<Array<FileInfo>>([])
+  const [paths, setPaths] = useState(["."])
 
   // 文件上传状态的开关
   const [fStatusOpen, setFStatusOpen] = useState(false)
 
   // 文件上传状态的信息列表
-  const [filesStatus, setFilesStatus] = useState<Array<UpStatusType>>([])
+  const [filesStatus, setFilesStatus] = useState<UpStatusType[]>([])
 
   // 上传文件的验证请求头
-  const [headers, setHeaders] = useState(new Headers({}))
+  const [headers, setHeaders] = useState(new Headers())
 
   return {
     paths,
     setPaths,
-    files,
-    setFiles,
     fStatusOpen,
     setFStatusOpen,
     filesStatus,
@@ -68,7 +69,7 @@ const useValues = () => {
 const useSharedValues = () => useBetween(useValues)
 
 // 菜单
-const Menus = () => {
+const Menus = React.memo(() => {
   // 是否显示菜单列表
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
@@ -79,6 +80,7 @@ const Menus = () => {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget)
   }
+
   // 点击率菜单列表项
   const handleClose = async (action: string) => {
     // 先关闭菜单
@@ -127,51 +129,45 @@ const Menus = () => {
       </Menu>
     </Fragment>
   )
-}
+})
 
 // 导航栏组件
-const Navbar = () => {
+const Navbar = React.memo(() => {
   const {paths, setPaths} = useSharedValues()
+
+  const genNavbar = React.useMemo(() => paths.map((item, index) =>
+    <Button key={index} color={index === paths.length - 1 ? "primary" : "inherit"}
+            onClick={() => setPaths(prev => prev.slice(0, index + 1))}>
+      {item === "." ? "Home" : item}
+    </Button>
+  ), [paths, setPaths])
 
   return (
     <Stack>
       <Stack direction={"row"} justifyContent={"space-between"}>
-        <Breadcrumbs>
-          {paths.map((item, index) =>
-            <Button key={index} color={index === paths.length - 1 ? "primary" : "inherit"}
-                    onClick={() => setPaths(prev => prev.slice(0, index + 1))}>
-              {item === "." ? "Home" : item}
-            </Button>
-          )}
-        </Breadcrumbs>
+        <Breadcrumbs>{genNavbar}</Breadcrumbs>
 
         <Menus/>
       </Stack>
       <Divider component={"li"}/>
     </Stack>
   )
-}
-
-// 文件上传状态的类型
-class UpStatusType {
-  name: string = ""
-  status: boolean | string = false
-}
+})
 
 // 文件上传状态的组件
-const FilesStatus = () => {
+const FilesStatus = React.memo(() => {
   const {fStatusOpen, setFStatusOpen, filesStatus} = useSharedValues()
 
   const getSeverity = (status: boolean | string) => status === true ? "success" :
     status === false ? "info" : "error"
+
   const getContent = (name: string, status: boolean | string) => status === true ? `"${name}" 上传成功` :
     status === false ? `"${name}" 正在上传…` : `"${name}" 上传出错：${status}`
 
   return (
-    <Drawer anchor={"top"} open={fStatusOpen}
-            onClose={() => setFStatusOpen(false)}>
+    <Drawer anchor={"top"} open={fStatusOpen} onClose={() => setFStatusOpen(false)}>
       <Stack divider={<Divider/>}>
-        <div style={{padding: "10px 16px", margin: "auto"}}>上传文件的状态</div>
+        <Typography padding={"10px 16px"} margin={"auto"} color={"#1976d2"}>文件状态</Typography>
         {
           filesStatus.map((item, index) =>
             <Alert key={index} severity={getSeverity(item.status)}>
@@ -181,7 +177,7 @@ const FilesStatus = () => {
       </Stack>
     </Drawer>
   )
-}
+})
 
 // 下载文件
 const onDownloadFile = async (name: string, path: string) => {
@@ -265,18 +261,23 @@ const FItem = (props: { file: FileInfo }) => {
 }
 
 // 文件列表组件
-const FList = (props: { sx?: SxProps }) => {
+const FList = React.memo(() => {
+  // 当前目录的文件列表，用于渲染界面
+  const [files, setFiles] = useState<FileInfo[]>([])
+
   // 共享当前导航路径
-  const {paths, files, setFiles} = useSharedValues()
+  const {paths} = useSharedValues()
+
   // 共享 Snackbar
   const {showSb} = useSharedSnackbar()
 
   // 获取
-  const obtain = async () => {
-    let path = paths.join('/')
+  const obtain = React.useCallback(async (dst: string[]) => {
+    let path = dst.join('/')
     console.log(TAG, `读取路径 "${path}"`)
+
     path = `/api/file/list?path=${encodeURIComponent(path)}`
-    let obj = await getJSON<Array<FileInfo>>(path, undefined, showSb)
+    let obj = await getJSON<FileInfo[]>(path, undefined, showSb)
     if (!obj) return
 
     // 获取失败
@@ -292,80 +293,90 @@ const FList = (props: { sx?: SxProps }) => {
     }
 
     setFiles(obj.data)
-  }
+  }, [showSb])
 
   // 获取文件列表
   useEffect(() => {
     // 执行
-    obtain()
-  }, [paths])
+    obtain(paths)
+  }, [paths, obtain, showSb])
 
   return (
     files.length === 0 ?
       <Skeleton animation={"wave"} sx={{height: 30}}/> :
-      <List sx={{...props.sx}}>{files.map((f, i) => <FItem key={i} file={f}/>)}</List>
+      <List sx={{overflowY: "auto"}}>
+        {files.map((f, i) => <FItem key={i} file={f}/>)}
+      </List>
   )
-}
+})
 
 // 文件管理组件
-const FServer = () => {
+const FServer = React.memo(() => {
   // 文件上传状态
   const {setPaths, filesStatus, setFilesStatus, headers} = useSharedValues()
+
   // 共享 Snackbar
   const {showSb} = useSharedSnackbar()
 
+  const handleUpload = React.useCallback((name: string) => setFilesStatus(prev => {
+      showSb({open: true, severity: "info", message: `开始上传 "${name}"...`})
+      // 在上传列表中增加文件
+      let newStatus = [...prev]
+      let index = newStatus.findIndex(item => item.name === name)
+      // 不存在时，直接追加新上传文件的状态
+      if (index === -1) {
+        return [...prev, {name: name, status: false}]
+      }
+      // 已存在时，提取到后面，并设置其上传状态为未完成
+      let current = newStatus.splice(index, 1)
+      current[0].status = false
+      return [...newStatus, ...current]
+    }),
+    [setFilesStatus, showSb])
+
+  const handleFinish = React.useCallback((name: string, err?: Error) => {
+      // 文件上传成功、失败的处理
+      const msg = `上传文件"${name}" ` + (err ? `失败：${err.toString()}` : "成功")
+      console.log(TAG, msg)
+
+      setPaths(prev => [...prev])
+      showSb({
+        open: true,
+        message: msg,
+        severity: err ? "error" : "success",
+        autoHideDuration: err ? undefined : 3000
+      })
+
+      let newStatus = [...filesStatus]
+      let index = newStatus.findIndex(item => item.name === name)
+      if (index === -1) {
+        console.log(TAG, `无法改变文件"${name}"的上传状态，找不到索引`, newStatus)
+        return
+      }
+      newStatus[index].status = err ? err.toString() : true
+      setFilesStatus(newStatus)
+    },
+    [showSb, setPaths, setFilesStatus, filesStatus])
 
   useEffect(() => {
     document.title = "文件管理"
   }, [])
 
   return (
-    <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%", overflowY: "hidden"}}>
+    <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%"}}>
       <Navbar/>
 
-      <FList sx={{overflowY: "auto"}}/>
+      <FList/>
 
-      <DoFileUpload id={"UP_FILES"} apiURL={"/api/file/upload"} headers={headers}
-                    onUpload={name => setFilesStatus(prev => {
-                      showSb({open: true, severity: "info", message: `开始上传 "${name}"...`})
-                      // 在上传列表中增加文件
-                      let newStatus = [...prev]
-                      let index = newStatus.findIndex(item => item.name === name)
-                      // 不存在时，直接追加新上传文件的状态
-                      if (index === -1) {
-                        return [...prev, {name: name, status: false}]
-                      }
-                      // 已存在时，提取到后面，并设置其上传状态为未完成
-                      let current = newStatus.splice(index, 1)
-                      current[0].status = false
-                      return [...newStatus, ...current]
-                    })}
+      <DoFileUpload id={"UP_FILES"} apiURL={"/api/file/upload"}
+                    headers={headers}
+                    onUpload={handleUpload}
+                    onFinish={handleFinish}
+      />
 
-                    onFinish={(name, err) => {
-                      // 文件上传成功、失败的处理
-                      const msg = `上传文件"${name}" ` + (err ? `失败：${err.toString()}` : "成功")
-                      console.log(TAG, msg)
-
-                      setPaths(prev => [...prev])
-                      showSb({
-                        open: true,
-                        message: msg,
-                        severity: err ? "error" : "success",
-                        autoHideDuration: err ? undefined : 3000
-                      })
-
-                      let newStatus = [...filesStatus]
-                      let index = newStatus.findIndex(item => item.name === name)
-                      if (index === -1) {
-                        console.log(TAG, `无法改变文件"${name}"的上传状态，找不到索引`, newStatus)
-                        return
-                      }
-                      newStatus[index].status = err ? err.toString() : true
-                      setFilesStatus(newStatus)
-                    }}/>
       <FilesStatus/>
     </Stack>
   )
-}
+})
 
 export default FServer

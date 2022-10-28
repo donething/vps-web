@@ -1,5 +1,5 @@
-import {useEffect, useState} from "react"
-import {Alert, Card, CardContent, IconButton, Stack, SxProps, Typography} from "@mui/material"
+import React, {useEffect, useState} from "react"
+import {Alert, Card, CardContent, IconButton, Stack, Typography} from "@mui/material"
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined'
 import {getJSON} from "../comm/comm"
 import {useSharedSnackbar} from "do-comps"
@@ -13,17 +13,17 @@ type AlbumsStatusType = {
 }
 
 // 图集下载的总状态
-class TotalCountInfo {
-  fail: number = 0
-  skip: number = 0
+type TotalCountInfo = {
+  fail: number
+  skip: number
 }
 
 // 图集下载状态的组件
-const AlbumsStatus = (props: { sx?: SxProps }): JSX.Element => {
+const AlbumsStatus = React.memo((): JSX.Element => {
   // 状态记录
   const [statusMap, setStatusMap] = useState<{ [id: string]: AlbumsStatusType }>({})
   // 需要重试下载的图集数
-  const [totalCountInfo, setTotalCountInfo] = useState(new TotalCountInfo())
+  const [totalCountInfo, setTotalCountInfo] = useState<TotalCountInfo>({fail: 0, skip: 0})
   // 用于刷新组件
   const [count, setCount] = useState(0)
 
@@ -31,7 +31,7 @@ const AlbumsStatus = (props: { sx?: SxProps }): JSX.Element => {
   const {showSb} = useSharedSnackbar()
 
   // 获取图集下载状态
-  const init = async () => {
+  const init = React.useCallback(async () => {
     let obj = await getJSON<{ [id: string]: AlbumsStatusType }>("/api/pics/dl/status",
       undefined, showSb)
     if (obj?.code === 0) {
@@ -43,11 +43,11 @@ const AlbumsStatus = (props: { sx?: SxProps }): JSX.Element => {
     if (countObj?.code === 0) {
       setTotalCountInfo(countObj.data)
     }
-  }
+  }, [showSb])
 
   useEffect(() => {
     init()
-  }, [count])
+  }, [count, init])
 
   let statusElems: Array<JSX.Element> = []
   for (const [id, s] of Object.entries(statusMap)) {
@@ -60,7 +60,7 @@ const AlbumsStatus = (props: { sx?: SxProps }): JSX.Element => {
   }
 
   return (
-    <Card sx={{...props.sx}}>
+    <Card sx={{width: {sm: 300}}}>
       <CardContent>
         <Stack direction={"row"} justifyContent={"space-between"}>
           <span>图集下载状态</span>
@@ -76,19 +76,19 @@ const AlbumsStatus = (props: { sx?: SxProps }): JSX.Element => {
       </CardContent>
     </Card>
   )
-}
+})
 
 // 任务状态的组件
-const Tasks = () => {
+const Tasks = React.memo(() => {
   useEffect(() => {
     document.title = "任务状态"
   }, [])
 
   return (
     <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%", overflowY: "hidden"}}>
-      <AlbumsStatus sx={{width: {sm: 300}}}/>
+      <AlbumsStatus/>
     </Stack>
   )
-}
+})
 
 export default Tasks
