@@ -26,7 +26,7 @@ import {ReactComponent as IconLink} from "../icons/link.svg"
 import {ReactComponent as IconMagnet} from "../icons/magnet.svg"
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
 import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
-import {HighlightOffOutlined} from "@mui/icons-material"
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
 import {genAuthHeaders, getJSON} from "../comm/comm"
 import {DoSnackbarProps, DoDialogProps, useSharedSnackbar, useSharedDialog, DoFileUpload} from "do-comps"
 
@@ -254,7 +254,7 @@ const FItem = (props: { file: FileInfo }) => {
 
       <IconButton onClick={() =>
         onDelFile(props.file.name, `${paths.join("/")}/${props.file.name}`, setPaths, showSb, showDialog)}>
-        <HighlightOffOutlined/>
+        <CloseOutlinedIcon opacity={0.3}/>
       </IconButton>
     </ListItem>
   )
