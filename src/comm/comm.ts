@@ -1,7 +1,6 @@
-import {request} from "do-utils"
+import {request, sha256} from "do-utils"
 import {JResult} from "./typedef"
 import {DoSnackbarProps} from "do-comps"
-import {sha256} from "do-utils/dist/text"
 import {LS_AUTH_KEY} from "../funcs/settings"
 
 // 生成授权码

@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react"
 import {Button, Card, CardActions, CardContent, Stack, Typography} from "@mui/material"
 import {getJSON} from "../comm/comm"
-import {sha256} from "do-utils/dist/text"
+import {sha256} from "do-utils"
 import {LS_AUTH_KEY} from "./settings"
 import {useSharedSnackbar} from "do-comps"
 
