@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react"
 import {Button, FormControl, InputLabel, OutlinedInput, Stack} from "@mui/material"
-import {useSharedSnackbar} from "do-comps"
+import {DoPasswdField, useSharedSnackbar} from "do-comps"
 
 // 标签
 const TAG = "[Settings]"
@@ -28,28 +28,10 @@ const Settings = React.memo((): JSX.Element => {
   }, [])
 
   return (
-    <Stack className={"main"} sx={{bgcolor: "background.paper", gap: 2}}>
-      <FormControl fullWidth size="small">
-        <InputLabel htmlFor="ss_auth">Auth 授权码</InputLabel>
-        <OutlinedInput
-          id="ss_auth"
-          value={auth}
-          type="password"
-          onChange={e => setAuth(e.target.value)}
-          label="Auth 授权码"
-        />
-      </FormControl>
+    <Stack className={"main"} sx={{bgcolor: "background.paper", gap: 3}}>
+      <DoPasswdField id="ss_auth" value={auth} setValue={setAuth} label={"Auth 授权码"} size={"small"}/>
 
-      <FormControl fullWidth size="small">
-        <InputLabel htmlFor="ss_trans">磁力工具的地址</InputLabel>
-        <OutlinedInput
-          id="ss_trans"
-          value={trans}
-          type="password"
-          onChange={e => setTrans(e.target.value)}
-          label="磁力工具的地址"
-        />
-      </FormControl>
+      <DoPasswdField id="ss_trans" value={trans} setValue={setTrans} label={"磁力工具的地址"} size={"small"}/>
 
       <Button variant="contained" color="primary" onClick={() => {
         localStorage.setItem(LS_AUTH_KEY, auth)
