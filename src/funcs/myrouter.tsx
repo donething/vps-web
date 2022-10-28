@@ -49,7 +49,7 @@ const MyRouter = React.memo((): JSX.Element => {
 
   return (
     <Stack className={"main"} sx={{bgcolor: "background.paper"}}>
-      <Card sx={{width: {sm: 420}}}>
+      <Card sx={{width: "100%"}}>
         <CardContent>
           <Typography sx={{mb: 1.5}}>路由器信息</Typography>
           <Stack direction={"row"} gap={1}>
