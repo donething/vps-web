@@ -81,7 +81,7 @@ const Header = React.memo(() => {
   const {sInfo, setSInfo} = useSharedValues()
 
   const handleKwChange = React.useCallback((kw: string) => {
-    if (!kw.trim()) return
+    if (!kw.trim() || kw === sInfo.keyword) return
 
     // 更新搜索关键字后，也需要重置页数
     setSInfo(prev => ({...prev, keyword: kw, page: 1}))
