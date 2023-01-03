@@ -18,7 +18,7 @@ import {
 import React, {Fragment, useEffect, useState} from "react"
 import {useBetween} from "use-between"
 import {FileInfo} from "../comm/typedef"
-import {LS_Trans_KEY} from "./settings"
+import {LS_Trans_Port_KEY} from "./settings"
 import FolderOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
 import FileOutlinedIcon from '@mui/icons-material/FileOpenOutlined'
 import {ReactComponent as IconNginx} from "../icons/nginx.svg"
@@ -94,7 +94,9 @@ const Menus = React.memo(() => {
         window.open("/ariang", "_blank")
         break
       case "DL_Magnet":
-        window.open(localStorage.getItem(LS_Trans_KEY) || "", "_blank")
+        let port = localStorage.getItem(LS_Trans_Port_KEY) || ""
+        let url = `http://${window.location.host}:${port}`
+        window.open(url, "_blank")
         break
       case "UP_FILES":
         setHeaders(await genAuthHeaders());

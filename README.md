@@ -51,5 +51,9 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 2. 编辑`package.json`文件，修改工程名`name`属性，再退出编辑软件，修改工程所在的文件夹名
 3. 进入工程目录，执行`yarn`命令来下载依赖
 
+## 打包
+
+打包上传`build.zip`到`VPS`中网站目录下后，使用`unzip -o build.zip`覆盖源文件解压，即可
+
 ## 后端服务
 [donething/vps-go: 管理 vps](https://github.com/donething/vps-go)
