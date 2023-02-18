@@ -27,7 +27,7 @@ import {ReactComponent as IconMagnet} from "../icons/magnet.svg"
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
 import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
-import {genAuthHeaders, getJSON} from "../comm/comm"
+import {getJSON} from "../comm/comm"
 import {DoSnackbarProps, DoDialogProps, useSharedSnackbar, useSharedDialog, DoFileUpload} from "do-comps"
 
 // 标签
@@ -50,18 +50,13 @@ const useValues = () => {
   // 文件上传状态的信息列表
   const [filesStatus, setFilesStatus] = useState<UpStatusType[]>([])
 
-  // 上传文件的验证请求头
-  const [headers, setHeaders] = useState(new Headers())
-
   return {
     paths,
     setPaths,
     fStatusOpen,
     setFStatusOpen,
     filesStatus,
-    setFilesStatus,
-    headers,
-    setHeaders
+    setFilesStatus
   }
 }
 
@@ -74,7 +69,7 @@ const Menus = React.memo(() => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
   // 共享 显示上传状态组件
-  const {setFStatusOpen, setHeaders} = useSharedValues()
+  const {setFStatusOpen} = useSharedValues()
 
   // 点击了菜单弹出菜单列表
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -99,7 +94,6 @@ const Menus = React.memo(() => {
         window.open(url, "_blank")
         break
       case "UP_FILES":
-        setHeaders(await genAuthHeaders());
         (document.querySelector("#UP_FILES") as HTMLElement).click()
         break
       case "UD_Progress":
@@ -315,7 +309,7 @@ const FList = React.memo(() => {
 // 文件管理组件
 const FServer = React.memo(() => {
   // 文件上传状态
-  const {setPaths, filesStatus, setFilesStatus, headers} = useSharedValues()
+  const {setPaths, filesStatus, setFilesStatus} = useSharedValues()
 
   // 共享 Snackbar
   const {showSb} = useSharedSnackbar()
@@ -371,7 +365,6 @@ const FServer = React.memo(() => {
       <FList/>
 
       <DoFileUpload id={"UP_FILES"} apiURL={"/api/file/upload"}
-                    headers={headers}
                     onUpload={handleUpload}
                     onFinish={handleFinish}
       />

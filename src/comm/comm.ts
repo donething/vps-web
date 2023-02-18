@@ -1,24 +1,6 @@
-import {request, sha256} from "do-utils"
+import {request} from "do-utils"
 import {JResult} from "./typedef"
 import {DoSnackbarProps} from "do-comps"
-import {LS_AUTH_KEY} from "../funcs/settings"
-
-// 生成授权码
-export const genAuth = async () => {
-  let auth = localStorage.getItem(LS_AUTH_KEY) || ""
-  let t = new Date().getTime()
-  let s = await sha256(auth + t + auth)
-  return {t, s}
-}
-
-// 生成含授权码的请求头
-export const genAuthHeaders = async () => {
-  let {t, s} = await genAuth()
-  return new Headers({
-    "t": t.toString(),
-    "s": s
-  })
-}
 
 // 执行网络请求，适配当前界面
 export const getJSON = async <T>(
@@ -26,9 +8,7 @@ export const getJSON = async <T>(
   data: string | object | FormData | undefined,
   showSb?: (ps: DoSnackbarProps) => void
 ): Promise<JResult<T> | undefined> => {
-  let headers = await genAuthHeaders()
-
-  let resp = await request(path, data, {headers: headers}).catch(e =>
+  let resp = await request(path, data).catch(e =>
     console.error(`执行网络请求 "${path}" 出错`, e)
   )
   // 网络出错
