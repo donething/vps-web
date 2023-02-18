@@ -17,6 +17,7 @@ import {ThemeProvider} from "@mui/material"
 import theme from "./mytheme"
 import Myrouter from "./funcs/myrouter"
 import {DoSnackbar, DoDialog} from "do-comps"
+import TGBot from "./funcs/tgbot"
 
 const container = document.getElementById('root')
 const root = createRoot(container!)
@@ -30,11 +31,12 @@ root.render(
       <HashRouter>
         <Routes>
           <Route path="/" element={<App/>}/>
-          <Route path="/music" element={<Music/>}/>
           <Route path="/fserver" element={<FServer/>}/>
-          <Route path="/tasks" element={<Tasks/>}/>
+          <Route path="/music" element={<Music/>}/>
           <Route path="/router" element={<Myrouter/>}/>
           <Route path="/settings" element={<Settings/>}/>
+          <Route path="/tasks" element={<Tasks/>}/>
+          <Route path="/tgbot" element={<TGBot/>}/>
         </Routes>
       </HashRouter>
     </ThemeProvider>

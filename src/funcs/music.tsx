@@ -106,7 +106,7 @@ const Header = React.memo(() => {
         return nItems
       }
     })
-  }, [setSInfo, setHistoryWords])
+  }, [sInfo.keyword, setSInfo, setHistoryWords])
 
   const handleOpsChange = React.useCallback((kv: { [k: string]: number }) => {
     // 更新搜索选项后，也需要重置页数
