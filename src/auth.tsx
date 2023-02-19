@@ -5,8 +5,7 @@ import {request} from "do-utils"
 import {JResult} from "./comm/typedef"
 
 const TAG = "[Auth]"
-
-const Auth = () => {
+const Auth = React.memo(() => {
   const navigate = useNavigate()
 
   const init = React.useCallback(async () => {
@@ -25,6 +24,6 @@ const Auth = () => {
   }, [init])
 
   return (<></>)
-}
+})
 
 export default Auth
