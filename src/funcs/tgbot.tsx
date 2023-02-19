@@ -58,10 +58,10 @@ const FanHao = React.memo((): JSX.Element => {
   }, [fh, extra, still, showSb])
 
   return (
-    <Stack direction={"column"} gap={1}>
+    <Stack direction={"column"} gap={2}>
       <Divider>记录番号</Divider>
       <TextField label={"番号"} required size={"small"} value={fh} onChange={handleInputFH}/>
-      <TextField label={`额外信息（特征，如 ${decodeURIComponent(label)}）`} size={"small"} value={extra}
+      <TextField label={`标签如 ${decodeURIComponent(label)}`} size={"small"} value={extra}
                  onChange={handleInputExtra}/>
       <FormControlLabel control={<Checkbox checked={still} onChange={handleInputStill}/>} label="重复发送"/>
       <Button variant={"contained"} size={"small"} disabled={working} onClick={handleSend}>记录番号</Button>
