@@ -8,6 +8,10 @@ import Auth from "../auth"
 // 标签
 const TAG = "[TGBot]"
 
+const label = "%23%E6%97%A0%E7%A0%81%20%23%E6%B5%81%E5%87%BA%20%23%E5%B7%A8%E4" +
+  "%B9%B3%20%23%E7%BE%8E%E5%B0%BB%20%23%E7%BE%8E%E8%84%9A%20%23%E5%8F%A3%E4%BA%A4" +
+  "%20%23%E6%8C%89%E6%91%A9"
+
 // 番号面板
 const FanHao = React.memo((): JSX.Element => {
   const [fh, setFh] = React.useState("")
@@ -57,7 +61,8 @@ const FanHao = React.memo((): JSX.Element => {
     <Stack direction={"column"} gap={1}>
       <Divider>记录番号</Divider>
       <TextField label={"番号"} required size={"small"} value={fh} onChange={handleInputFH}/>
-      <TextField label={"额外信息"} size={"small"} value={extra} onChange={handleInputExtra}/>
+      <TextField label={`额外信息（特征，如 ${decodeURIComponent(label)}）`} size={"small"} value={extra}
+                 onChange={handleInputExtra}/>
       <FormControlLabel control={<Checkbox checked={still} onChange={handleInputStill}/>} label="重复发送"/>
       <Button variant={"contained"} size={"small"} disabled={working} onClick={handleSend}>记录番号</Button>
     </Stack>
