@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from "react"
 import {Button, Stack} from "@mui/material"
 import {DoPasswdField, useSharedSnackbar} from "do-comps"
+import {useNavigate} from "react-router-dom"
+import {sleep} from "do-utils"
 
 // 标签
 const TAG = "[Settings]"
@@ -25,6 +27,8 @@ const Settings = React.memo((): JSX.Element => {
 
   // 共享 Snackbar
   const {showSb} = useSharedSnackbar()
+  // 路由跳转
+  const navigate = useNavigate()
 
   useEffect(() => {
     document.title = "设置选项"
@@ -42,12 +46,15 @@ const Settings = React.memo((): JSX.Element => {
 
       <DoPasswdField id="ss_trans" value={trans} setValue={setTrans} label={"磁力工具的端口"} size={"small"}/>
 
-      <Button variant="contained" color="primary" onClick={() => {
+      <Button variant="contained" color="primary" onClick={async () => {
         localStorage.setItem(LS_ACCESS_KEY, access)
         localStorage.setItem(LS_AUTH_KEY, auth)
         localStorage.setItem(LS_Trans_Port_KEY, trans)
-        console.log(TAG, "已保存设置")
-        showSb({open: true, message: "已保存设置", severity: "success"})
+
+        console.log(TAG, "已保存设置，将跳转到之前的页面")
+        showSb({open: true, message: "已保存设置，将跳转到之前的页面", severity: "success"})
+        await sleep(500)
+        navigate(-2)
       }}>保存</Button>
     </Stack>
   )

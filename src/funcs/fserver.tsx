@@ -29,6 +29,7 @@ import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
 import {getJSON} from "../comm/comm"
 import {DoSnackbarProps, DoDialogProps, useSharedSnackbar, useSharedDialog, DoFileUpload} from "do-comps"
+import Auth from "../auth"
 
 // 标签
 const TAG = "[FServer]"
@@ -360,15 +361,10 @@ const FServer = React.memo(() => {
 
   return (
     <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%"}}>
+      <Auth/>
       <Navbar/>
-
       <FList/>
-
-      <DoFileUpload id={"UP_FILES"} apiURL={"/api/file/upload"}
-                    onUpload={handleUpload}
-                    onFinish={handleFinish}
-      />
-
+      <DoFileUpload id={"UP_FILES"} apiURL={"/api/file/upload"} onUpload={handleUpload} onFinish={handleFinish}/>
       <FilesStatus/>
     </Stack>
   )

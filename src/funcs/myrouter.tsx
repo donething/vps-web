@@ -4,6 +4,7 @@ import {getJSON} from "../comm/comm"
 import {sha256} from "do-utils"
 import {LS_AUTH_KEY} from "./settings"
 import {useSharedSnackbar} from "do-comps"
+import Auth from "../auth"
 
 // 标签
 const TAG = "[MyRouter]"
@@ -49,6 +50,8 @@ const MyRouter = React.memo((): JSX.Element => {
 
   return (
     <Stack className={"main"} sx={{bgcolor: "background.paper"}}>
+      <Auth/>
+
       <Card sx={{width: "100%"}}>
         <CardContent>
           <Typography sx={{mb: 1.5}}>路由器信息</Typography>

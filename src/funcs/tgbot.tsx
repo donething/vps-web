@@ -3,6 +3,7 @@ import {Button, Checkbox, Divider, FormControlLabel, Stack, TextField} from "@mu
 import {useSharedSnackbar} from "do-comps"
 import {request} from "do-utils"
 import {JResult} from "../comm/typedef"
+import Auth from "../auth"
 
 // 标签
 const TAG = "[TGBot]"
@@ -67,6 +68,7 @@ const FanHao = React.memo((): JSX.Element => {
 const TGBot = React.memo((): JSX.Element => {
   return (
     <Stack direction={"column"} gap={2} padding={1}>
+      <Auth/>
       <FanHao/>
     </Stack>
   )

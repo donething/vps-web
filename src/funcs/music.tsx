@@ -12,6 +12,7 @@ import React, {Fragment, useEffect, useState} from "react"
 import {getJSON} from "../comm/comm"
 import {DoAutocomplete, DoList, useSharedSnackbar} from "do-comps"
 import {useBetween} from "use-between"
+import Auth from "../auth"
 
 // 标签
 const TAG = "[Music]"
@@ -273,12 +274,14 @@ const Content = React.memo(() => {
 
 // 音乐面板组件
 const Music = React.memo(() => {
+
   useEffect(() => {
     document.title = "音乐搜索"
   }, [])
 
   return (
     <Stack className={"main"} bgcolor={"background.paper"} height={"100%"}>
+      <Auth/>
       <Header/>
       <Content/>
     </Stack>

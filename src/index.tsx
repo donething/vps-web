@@ -37,6 +37,8 @@ root.render(
           <Route path="/settings" element={<Settings/>}/>
           <Route path="/tasks" element={<Tasks/>}/>
           <Route path="/tgbot" element={<TGBot/>}/>
+
+          <Route path="*" element={<App/>}/>
         </Routes>
       </HashRouter>
     </ThemeProvider>
