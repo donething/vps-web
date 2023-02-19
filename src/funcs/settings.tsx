@@ -54,7 +54,7 @@ const Settings = React.memo((): JSX.Element => {
         console.log(TAG, "已保存设置，将跳转到之前的页面")
         showSb({open: true, message: "已保存设置，将跳转到之前的页面", severity: "success"})
         await sleep(500)
-        navigate(-2)
+        navigate(-1)
       }}>保存</Button>
     </Stack>
   )
