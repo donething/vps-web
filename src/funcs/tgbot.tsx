@@ -40,7 +40,7 @@ const FanHao = React.memo((): JSX.Element => {
     }
 
     setWorking(true)
-    const tagsStr = Object.entries(tagObj).filter(([_, b]) => b).map(([tag]) => "#" + tag).join(",")
+    const tagsStr = Object.entries(tagObj).filter(([_, b]) => b).map(([tag]) => "#" + tag).join(" ")
     const data = `fanhao=${encodeURIComponent(fh)}&tags=${encodeURIComponent(tagsStr)}&still=${still}`
     const resp = await request("/api/tgbot/fanhao/send", data)
     const json: JResult<any> = await resp.json()
@@ -82,7 +82,8 @@ const FanHao = React.memo((): JSX.Element => {
   return (
     <Stack direction={"column"} gap={2}>
       <Divider>记录番号</Divider>
-      <TextField label={"含番号的文本"} required size={"small"} value={fh} onChange={handleInputFH}/>
+      <TextField label={"含番号的文本，多行时会共用下面的信息"} required multiline minRows={3} size={"small"}
+                 value={fh} onChange={handleInputFH}/>
       <FormGroup row sx={{gap: 1}}>{tags}</FormGroup>
       <FormControlLabel sx={{width: "fit-content"}}
                         control={<Checkbox checked={still} onChange={handleInputStill}/>} label="重复发送"/>
