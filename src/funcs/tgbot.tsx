@@ -79,6 +79,10 @@ const FanHao = React.memo((): JSX.Element => {
     init()
   }, [init])
 
+  React.useEffect(() => {
+    document.title = "记录番号"
+  }, [])
+
   return (
     <Stack direction={"column"} gap={2}>
       <Divider>记录番号</Divider>
