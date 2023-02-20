@@ -40,7 +40,7 @@ const FanHao = React.memo((): JSX.Element => {
     }
 
     setWorking(true)
-    const tagsStr = Object.entries(tagObj).filter(([_, b]) => b).map(([tag]) => "#" + tag).join(" ")
+    const tagsStr = Object.entries(tagObj).filter(([_, b]) => b).map(([tag]) => "#" + tag).join(",")
     const data = `fanhao=${encodeURIComponent(fh)}&tags=${encodeURIComponent(tagsStr)}&still=${still}`
     const resp = await request("/api/tgbot/fanhao/send", data)
     const json: JResult<any> = await resp.json()
@@ -70,7 +70,7 @@ const FanHao = React.memo((): JSX.Element => {
     }
 
     const tagsStr = decodeURIComponent(obj.data)
-    const tags = tagsStr.split(" ")
+    const tags = tagsStr.split(",")
     const map = Object.fromEntries(tags.map(v => [v, false]))
     setTagObj(map)
   }, [showSb])
