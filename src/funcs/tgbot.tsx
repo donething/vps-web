@@ -3,7 +3,6 @@ import {
   Accordion, AccordionDetails, AccordionSummary, Alert,
   Button,
   Checkbox,
-  Divider,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -34,7 +33,7 @@ type SendResult = {
  * @param props 番号、发送结果代码
  */
 const LItem = (props: { text: string, code: number, msg: string }) => {
-  // 对应成功、发送过、失败
+  // 对应成功、发过、失败
   const s = props.code === 0 ? "success" : props.code === 10 ? "info" : "error"
 
   return (
@@ -92,7 +91,7 @@ const FanHao = React.memo((): JSX.Element => {
 
     // 此次有发送失败的番号，需要将该番号显示在输入框中
     if (json.data.filter(r => r.code === 20).length !== 0) {
-      showSb({open: true, severity: "error", message: "有发送失败的番号"})
+      showSb({open: true, severity: "error", message: "有发送失败的番号", autoHideDuration: 800})
     }
 
     // 恢复输入为初始值
@@ -126,21 +125,21 @@ const FanHao = React.memo((): JSX.Element => {
   }, [])
 
   return (
-    <Stack direction={"column"} gap={2}>
-      <Divider>记录番号</Divider>
+    <Stack direction={"column"} gap={2} height={"100%"}>
       <TextField label={"含番号的文本，多行时会共用下面的信息"} required multiline minRows={3}
                  value={fh} size={"small"} onChange={handleInputFH}/>
       <FormControl>
         <FormLabel>标签</FormLabel>
-        <FormGroup row sx={{gap: 1}}>{tags}</FormGroup>
+        <FormGroup row>{tags}</FormGroup>
       </FormControl>
       <FormControlLabel label="重复发送" sx={{width: "fit-content"}}
                         control={<Checkbox checked={still} onChange={handleInputStill}/>}/>
       <Button variant={"contained"} disabled={working} onClick={handleSend}>记录番号</Button>
 
       <Accordion defaultExpanded>
-        <AccordionSummary>发送结果（绿：成功；蓝：发送过；红：失败）</AccordionSummary>
-        <AccordionDetails>{results}</AccordionDetails>
+        <AccordionSummary>结果（绿：成功；蓝：发过；红：失败）</AccordionSummary>
+        {/* 需要设置高度为约150px以下，才能出现滚动条 */}
+        <AccordionDetails sx={{height: "150px", overflowY: "auto"}}>{results}</AccordionDetails>
       </Accordion>
     </Stack>
   )
@@ -149,7 +148,7 @@ const FanHao = React.memo((): JSX.Element => {
 // TGBot 设置
 const TGBot = React.memo((): JSX.Element => {
   return (
-    <Stack direction={"column"} gap={2} padding={1}>
+    <Stack gap={2} padding={1} height={"100%"}>
       <Auth/>
       <FanHao/>
     </Stack>
