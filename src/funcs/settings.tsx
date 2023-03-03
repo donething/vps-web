@@ -7,8 +7,6 @@ import {sleep} from "do-utils"
 // 标签
 const TAG = "[Settings]"
 
-// 已确定可以访问首页的标志，存储到 localStorage 的键
-export const LS_ACCESS_Enable_KEY = "access_enable_key"
 // 访问首页的授权码，存储到 localStorage 的键
 export const LS_ACCESS_KEY = "access_key"
 // 操作路由器的授权码，存储到 localStorage 的键

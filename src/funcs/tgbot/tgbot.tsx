@@ -135,7 +135,7 @@ const Sender = React.memo((): JSX.Element => {
 
     // 恢复输入为初始值
     reset()
-  }, [content, still, tagObj, cType, reset, showSb])
+  }, [content, still, tagObj, cType, reset, webSite, showSb])
 
   const init = React.useCallback(async () => {
     const resp = await request("/api/tgbot/website")

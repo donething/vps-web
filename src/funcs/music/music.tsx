@@ -9,54 +9,16 @@ import {
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
 import PlayCircleOutlineOutlinedIcon from '@mui/icons-material/PlayCircleOutlineOutlined'
 import React, {Fragment, useEffect, useState} from "react"
-import {getJSON} from "../comm/comm"
+import {getJSON} from "../../comm/comm"
 import {DoAutocomplete, DoList, useSharedSnackbar} from "do-comps"
 import {useBetween} from "use-between"
-import Auth from "../auth"
+import Auth from "../../auth"
+import {SInfo, SMData, Song} from "./types"
 
 // 标签
 const TAG = "[Music]"
 // 存储搜索历史的键
 const LS_HIST_KEY = "history_words"
-
-// 搜索歌曲时返回的结果
-interface SMData {
-  total: string
-  payload: Song[]
-}
-
-// 歌曲信息
-interface Song {
-  name: string
-  size: number
-  singers: {
-    id: string
-    name: string
-  }[]
-  tags: string[]
-  lyricUrl: string
-  download_url: string
-  listen_url: string
-  albums?: {
-    id: string
-    name: string
-    type: string
-  }[]
-}
-
-// 搜索相关
-// 搜索选项需搜索的设为 1，不需搜索的设为 0
-type Ops = {
-  song: number
-  album: number
-  singer: number
-  mvSong: number
-  songlist: number
-  tagSong: number
-  bestShow: number
-}
-// 搜索的信息
-type SInfo = { keyword: string, page: number, ops: Ops }
 
 // 需要分享的值
 const useValues = () => {
@@ -183,10 +145,10 @@ const SongItem = (props: { song: Song }) => {
       <ListItemText primary={props.song.name}
                     secondary={props.song.singers.map(item => item.name).join(" / ")}
       />
-      <IconButton onClick={() => window.open(props.song.listen_url)}>
+      <IconButton onClick={() => window.open(props.song.listenUrl)}>
         <PlayCircleOutlineOutlinedIcon/>
       </IconButton>
-      <IconButton onClick={() => window.open(props.song.download_url)}>
+      <IconButton onClick={() => window.open(props.song.downloadUrl)}>
         <FileDownloadOutlinedIcon/>
       </IconButton>
     </ListItem>

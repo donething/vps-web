@@ -17,19 +17,19 @@ import {
 } from "@mui/material"
 import React, {Fragment, useEffect, useState} from "react"
 import {useBetween} from "use-between"
-import {FileInfo} from "../comm/typedef"
-import {LS_Trans_Port_KEY} from "./settings"
+import {LS_Trans_Port_KEY} from "../settings"
 import FolderOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
 import FileOutlinedIcon from '@mui/icons-material/FileOpenOutlined'
-import {ReactComponent as IconNginx} from "../icons/nginx.svg"
-import {ReactComponent as IconLink} from "../icons/link.svg"
-import {ReactComponent as IconMagnet} from "../icons/magnet.svg"
+import {ReactComponent as IconNginx} from "../../icons/nginx.svg"
+import {ReactComponent as IconLink} from "../../icons/link.svg"
+import {ReactComponent as IconMagnet} from "../../icons/magnet.svg"
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
 import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
-import {getJSON} from "../comm/comm"
+import {getJSON} from "../../comm/comm"
 import {DoSnackbarProps, DoDialogProps, useSharedSnackbar, useSharedDialog, DoFileUpload} from "do-comps"
-import Auth from "../auth"
+import Auth from "../../auth"
+import {FileInfo} from "./types"
 
 // 标签
 const TAG = "[FServer]"
@@ -235,16 +235,16 @@ const FItem = (props: { file: FileInfo }) => {
 
   return (
     <ListItem divider sx={{padding: 0}}>
-      <ListItemButton onClick={() => props.file.is_dir ? setPaths(prev => [...prev, props.file.name]) :
+      <ListItemButton onClick={() => props.file.isDir ? setPaths(prev => [...prev, props.file.name]) :
         onDownloadFile(props.file.name, `${paths.join("/")}/${props.file.name}`)
       }>
         <ListItemAvatar>
-          <Avatar>{props.file.is_dir ? <FolderOutlinedIcon/> : <FileOutlinedIcon/>}</Avatar>
+          <Avatar>{props.file.isDir ? <FolderOutlinedIcon/> : <FileOutlinedIcon/>}</Avatar>
         </ListItemAvatar>
 
         <ListItemText primary={props.file.name} sx={{wordBreak: "break-all"}} secondary={
           <span className={"row"} style={{gap: "16px"}}><span>{props.file.last}</span>
-            {!props.file.is_dir && <span>{props.file.size}</span>}
+            {!props.file.isDir && <span>{props.file.size}</span>}
           </span>}
         />
       </ListItemButton>

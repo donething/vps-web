@@ -9,9 +9,9 @@ import './index.css'
 import reportWebVitals from './reportWebVitals'
 import {HashRouter, Route, Routes} from "react-router-dom"
 import App from "./App"
-import Music from "./funcs/music"
+import Music from "./funcs/music/music"
 import Settings from "./funcs/settings"
-import FServer from "./funcs/fserver"
+import FServer from "./funcs/fserver/fserver"
 import Tasks from "./funcs/tasks"
 import {ThemeProvider} from "@mui/material"
 import theme from "./mytheme"
