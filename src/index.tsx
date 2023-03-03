@@ -17,7 +17,7 @@ import {ThemeProvider} from "@mui/material"
 import theme from "./mytheme"
 import Myrouter from "./funcs/myrouter"
 import {DoSnackbar, DoDialog} from "do-comps"
-import TGBot from "./funcs/tgbot"
+import TGBot from "./funcs/tgbot/tgbot"
 
 const container = document.getElementById('root')
 const root = createRoot(container!)
