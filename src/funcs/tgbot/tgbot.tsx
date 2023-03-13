@@ -6,15 +6,17 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
-  FormLabel, Radio, RadioGroup,
+  FormLabel, IconButton, Radio, RadioGroup,
   Stack,
-  TextField
+  TextField, Typography
 } from "@mui/material"
 import {useSharedSnackbar} from "do-comps"
 import {request} from "do-utils"
 import {JResult} from "../../comm/typedef"
 import Auth from "../../auth"
-import {SendResult, WebSite, WebSiteCType} from "./types"
+import {InputInfo, SendResult, WebSite, WebSiteCType} from "./types"
+import KeyboardDoubleArrowRightOutlinedIcon from '@mui/icons-material/KeyboardDoubleArrowRightOutlined'
+import KeyboardDoubleArrowLeftOutlinedIcon from '@mui/icons-material/KeyboardDoubleArrowLeftOutlined'
 
 // 标签
 const TAG = "[TGBot]"
@@ -37,6 +39,12 @@ const initWebSite: WebSite = {
     tags: "",
     bnText: ""
   }
+}
+
+// 解析标签信息
+const parseTags = (tagsStr: string) => {
+  const tags = tagsStr.split(",").filter(v => !!v)
+  return Object.fromEntries(tags.map(v => [v, false]))
 }
 
 /**
@@ -66,6 +74,10 @@ const Sender = React.memo((): JSX.Element => {
   const [still, setStill] = React.useState(false)
   // 标签选择的信息
   const [tagObj, setTagObj] = React.useState<{ [tag: string]: boolean }>({})
+  // 编辑标签时保存临时内容
+  const [tagTmp, setTagTmp] = React.useState("")
+  // 是否展示标签编辑框
+  const [tagVisible, setTagVisible] = React.useState(false)
   // 发送的结果
   const [result, setResult] = React.useState<SendResult[]>([])
   // 是否工作中
@@ -110,6 +122,11 @@ const Sender = React.memo((): JSX.Element => {
     return result.map(r => <LItem key={r.name} text={r.name} code={r.code} msg={r.msg}/>)
   }, [result])
 
+  // 显示开关标签编辑器的图标
+  const tagIcon = React.useMemo(() => {
+    return tagVisible ? <KeyboardDoubleArrowLeftOutlinedIcon/> : <KeyboardDoubleArrowRightOutlinedIcon/>
+  }, [tagVisible])
+
   // 重置输入的信息
   const reset = React.useCallback(() => {
     setContent("")
@@ -148,18 +165,22 @@ const Sender = React.memo((): JSX.Element => {
   const init = React.useCallback(async () => {
     const resp = await request("/api/tgbot/website")
     const obj: JResult<WebSite> = await resp.json()
+    if (obj.code !== 0) {
+      console.log(TAG, "获取网站信息出错：", obj.msg)
+      showSb({open: true, severity: "error", message: "获取网站信息出错：" + obj.msg})
+      return
+    }
+
     setWebSite(obj.data)
-  }, [])
+  }, [showSb])
 
   React.useEffect(() => {
     init()
   }, [init])
 
   React.useEffect(() => {
-    const tagsStr = decodeURIComponent(webSite[cType].tags)
-    const tags = tagsStr.split(" ").filter(v => !!v)
-    const map = Object.fromEntries(tags.map(v => [v, false]))
-    setTagObj(map)
+    setTagTmp(webSite[cType].tags)
+    setTagObj(parseTags(webSite[cType].tags))
   }, [webSite, cType])
 
   React.useEffect(() => {
@@ -179,8 +200,44 @@ const Sender = React.memo((): JSX.Element => {
       <TextField label={"额外的说明"} value={extra}
                  multiline maxRows={3} size={"small"} onChange={handleInputExtra}/>
 
-      <FormControl sx={{display: Object.keys(tagObj).length === 0 ? "none" : "inline-flex"}}>
-        <FormLabel>标签</FormLabel>
+      <FormControl>
+        <FormLabel>
+          <Stack direction={"row"} alignItems={"center"} gap={0.5}>
+            <Typography flex={"0 0 auto"}>标签</Typography>
+            <IconButton title={"编辑标签信息"} onClick={() => setTagVisible(prev => !prev)}>
+              {tagIcon}
+            </IconButton>
+
+            <TextField size={"small"} fullWidth label={"多个标签用逗号分隔"} sx={{display: tagVisible ? "" : "none"}}
+                       value={tagTmp}
+                       onChange={e => setTagTmp(e.target.value)}
+                       onKeyDown={async e => {
+                         // 回车后修改网站信息、设置标签编辑框不可见、发送修改到服务端
+                         if (e.key !== "Enter") {
+                           return
+                         }
+                         e.preventDefault()
+
+                         setWebSite(prev => {
+                           // 先提取目标的 InputInfo，修改其 tags 后，返回完整 website 信息以完成完整的修改
+                           const obj: InputInfo = {...webSite[cType], tags: tagTmp}
+                           return {...prev, [cType]: obj}
+                         })
+
+                         setTagVisible(false)
+
+                         const data = `tags=${tagTmp}`
+                         const resp = await request("/api/tgbot/tags/edit", data)
+                         const obj: JResult<any> = await resp.json()
+                         if (obj.code !== 0) {
+                           console.log(TAG, "修改标签出错：", obj.msg)
+                           showSb({open: true, severity: "error", message: "修改标签出错：" + obj.msg})
+                           return
+                         }
+                       }}
+            />
+          </Stack>
+        </FormLabel>
         <FormGroup row>{tags}</FormGroup>
       </FormControl>
 
