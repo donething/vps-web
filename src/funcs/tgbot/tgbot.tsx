@@ -60,6 +60,8 @@ const Sender = React.memo((): JSX.Element => {
   const [cType, setCType] = React.useState<WebSiteCType>(initCType)
   // 发送的内容
   const [content, setContent] = React.useState("")
+  // 发送的额外信息
+  const [extra, setExtra] = React.useState("")
   // 是否重复发送
   const [still, setStill] = React.useState(false)
   // 标签选择的信息
@@ -78,6 +80,10 @@ const Sender = React.memo((): JSX.Element => {
 
   const handleInputContent = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setContent(e.target.value)
+  }, [])
+
+  const handleInputExtra = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setExtra(e.target.value)
   }, [])
 
   const handleInputStill = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,8 +110,10 @@ const Sender = React.memo((): JSX.Element => {
     return result.map(r => <LItem key={r.name} text={r.name} code={r.code} msg={r.msg}/>)
   }, [result])
 
+  // 重置输入的信息
   const reset = React.useCallback(() => {
     setContent("")
+    setExtra("")
     setStill(false)
     setTagObj(prev => Object.fromEntries(Object.entries(prev).map(([v]) => [[v], false])))
   }, [])
@@ -119,23 +127,23 @@ const Sender = React.memo((): JSX.Element => {
     setWorking(true)
     setResult([])
     const tagsStr = Object.entries(tagObj).filter(([_, b]) => b).map(([tag]) => "#" + tag).join(" ")
-    const data = `ctype=${webSite[cType].cType}&content=${encodeURIComponent(content)}` +
-      `&tags=${encodeURIComponent(tagsStr)}&still=${still}`
+    const data = `ctype=${webSite[cType].cType}&content=${encodeURIComponent(content)}&` +
+      `tags=${encodeURIComponent(tagsStr)}&extra=${encodeURIComponent(extra)}&still=${still}`
 
     const resp = await request("/api/tgbot/send", data)
     const json: JResult<SendResult[]> = await resp.json()
     setWorking(false)
     setResult(json.data)
 
-    // 此次有发送失败的番号，需提示
+    // 此次有发送失败的，需提示。code 为 20 表示发送失败
     if (json.data.filter(r => r.code === 20).length !== 0) {
-      console.log(TAG, "有失败的番号")
-      showSb({open: true, severity: "error", message: "有失败的番号", autoHideDuration: 800})
+      console.log(TAG, "有失败的内容")
+      showSb({open: true, severity: "error", message: "有失败的内容", autoHideDuration: 800})
+    } else {
+      // 恢复输入为初始值
+      reset()
     }
-
-    // 恢复输入为初始值
-    reset()
-  }, [content, still, tagObj, cType, reset, webSite, showSb])
+  }, [content, extra, still, tagObj, cType, reset, webSite, showSb])
 
   const init = React.useCallback(async () => {
     const resp = await request("/api/tgbot/website")
@@ -165,8 +173,11 @@ const Sender = React.memo((): JSX.Element => {
         <RadioGroup row defaultValue={initCType} name="ctypes">{ctypes}</RadioGroup>
       </FormControl>
 
-      <TextField label={webSite[cType].inputLabel} required multiline rows={3}
-                 value={content} size={"small"} onChange={handleInputContent}/>
+      <TextField label={webSite[cType].inputLabel} value={content}
+                 required multiline maxRows={3} size={"small"} onChange={handleInputContent}/>
+
+      <TextField label={"额外的说明"} value={extra}
+                 multiline maxRows={3} size={"small"} onChange={handleInputExtra}/>
 
       <FormControl sx={{display: Object.keys(tagObj).length === 0 ? "none" : "inline-flex"}}>
         <FormLabel>标签</FormLabel>
