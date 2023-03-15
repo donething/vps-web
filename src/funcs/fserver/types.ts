@@ -5,3 +5,9 @@ export type FileInfo = {
   size: string;
   isDir: boolean;
 }
+
+// 文件上传状态的类型
+export type UpStatusType = {
+  name: string
+  status: boolean | string
+}

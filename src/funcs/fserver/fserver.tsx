@@ -10,7 +10,7 @@ import {
   ListItemAvatar, ListItemButton,
   ListItemText,
   Menu,
-  MenuItem, Skeleton,
+  MenuItem,
   Stack,
   SvgIcon,
   Typography,
@@ -29,16 +29,12 @@ import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
 import {getJSON} from "../../comm/comm"
 import {DoSnackbarProps, DoDialogProps, useSharedSnackbar, useSharedDialog, DoFileUpload} from "do-comps"
 import Auth from "../../auth"
-import {FileInfo} from "./types"
+import {FileInfo, UpStatusType} from "./types"
+import {sxBG, sxScroll} from "./sx"
+import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined'
 
 // 标签
 const TAG = "[FServer]"
-
-// 文件上传状态的类型
-type UpStatusType = {
-  name: string
-  status: boolean | string
-}
 
 // 共享
 const useValues = () => {
@@ -91,7 +87,7 @@ const Menus = React.memo(() => {
         break
       case "DL_Magnet":
         let port = localStorage.getItem(LS_Trans_Port_KEY) || ""
-        let url = `http://${window.location.host}:${port}`
+        let url = `//${window.location.host}:${port}`
         window.open(url, "_blank")
         break
       case "UP_FILES":
@@ -199,17 +195,17 @@ const onDelFile = (
     props: {color: "warning"},
     onClick: async () => {
       showDialog({open: false})
-      // 授权验证码
+
       let data = `path=${encodeURIComponent(path)}`
       let obj = await getJSON<Array<FileInfo>>("/api/file/del", data, showSb)
       if (!obj) return
 
       // 删除失败
       if (obj.code !== 0) {
-        console.log(TAG, "删除文件失败：", obj?.msg)
+        console.log(TAG, "删除文件失败：", obj.msg)
         showSb({
           open: true,
-          message: `删除文件失败：${obj?.msg}`,
+          message: `删除文件失败：${obj.msg}`,
           severity: "error",
           autoHideDuration: undefined
         })
@@ -224,8 +220,30 @@ const onDelFile = (
   }
 })
 
+const onSendTerabox = async (name: string, path: string, showSb: (ps: DoSnackbarProps) => void,) => {
+  let data = `path=${encodeURIComponent(path)}`
+  let obj = await getJSON<string>("/api/file/send/terabox", data, showSb)
+  if (!obj) return
+
+  // 删除失败
+  if (obj.code !== 0) {
+    console.log(TAG, "发送文件到失败：", obj.msg)
+    showSb({
+      open: true,
+      message: `发送文件到失败：${obj.msg}`,
+      severity: "error",
+      autoHideDuration: undefined
+    })
+    return
+  }
+
+  // 发送成功
+  console.log(TAG, `发送文件成功"${name}"`)
+  showSb({open: true, message: `发送文件成功"${name}"`, severity: "success"})
+}
+
 // 文件列表项
-const FItem = (props: { file: FileInfo }) => {
+const FItem = React.memo((props: { file: FileInfo }) => {
   // 导航栏路径
   const {paths, setPaths} = useSharedValues()
   // 共享 Snackbar
@@ -249,13 +267,18 @@ const FItem = (props: { file: FileInfo }) => {
         />
       </ListItemButton>
 
-      <IconButton onClick={() =>
+      <IconButton title={"上传到 Terabox 网盘"} onClick={() =>
+        onSendTerabox(props.file.name, `${paths.join("/")}/${props.file.name}`, showSb)}>
+        <CloudUploadOutlinedIcon opacity={0.5}/>
+      </IconButton>
+
+      <IconButton title={"删除"} onClick={() =>
         onDelFile(props.file.name, `${paths.join("/")}/${props.file.name}`, setPaths, showSb, showDialog)}>
-        <CloseOutlinedIcon opacity={0.3}/>
+        <CloseOutlinedIcon opacity={0.5}/>
       </IconButton>
     </ListItem>
   )
-}
+})
 
 // 文件列表组件
 const FList = React.memo(() => {
@@ -292,6 +315,10 @@ const FList = React.memo(() => {
     setFiles(obj.data)
   }, [showSb])
 
+  const filesList = React.useMemo(() => {
+    return files.map((f, i) => <FItem key={i} file={f}/>)
+  }, [files])
+
   // 获取文件列表
   useEffect(() => {
     // 执行
@@ -299,11 +326,7 @@ const FList = React.memo(() => {
   }, [paths, obtain, showSb])
 
   return (
-    files.length === 0 ?
-      <Skeleton animation={"wave"} sx={{height: 30}}/> :
-      <List sx={{overflowY: "auto"}}>
-        {files.map((f, i) => <FItem key={i} file={f}/>)}
-      </List>
+    <List sx={sxScroll}>{filesList}</List>
   )
 })
 
@@ -360,7 +383,7 @@ const FServer = React.memo(() => {
   }, [])
 
   return (
-    <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%"}}>
+    <Stack className={"main"} sx={sxBG}>
       <Auth/>
       <Navbar/>
       <FList/>
