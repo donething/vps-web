@@ -221,6 +221,8 @@ const onDelFile = (
 })
 
 const onSendTerabox = async (name: string, path: string, showSb: (ps: DoSnackbarProps) => void,) => {
+  showSb({open: true, message: `开始发送文件"${name}"`, severity: "info"})
+
   let data = `path=${encodeURIComponent(path)}`
   let obj = await getJSON<string>("/api/file/send/terabox", data, showSb)
   if (!obj) return
