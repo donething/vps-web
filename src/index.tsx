@@ -18,6 +18,7 @@ import theme from "./mytheme"
 import Myrouter from "./funcs/myrouter"
 import {DoSnackbar, DoDialog} from "do-comps"
 import TGBot from "./funcs/tgbot/tgbot"
+import Live from "./funcs/live/live"
 
 const container = document.getElementById('root')
 const root = createRoot(container!)
@@ -37,6 +38,7 @@ root.render(
           <Route path="/settings" element={<Settings/>}/>
           <Route path="/tasks" element={<Tasks/>}/>
           <Route path="/tgbot" element={<TGBot/>}/>
+          <Route path="/live" element={<Live/>}/>
 
           <Route path="*" element={<App/>}/>
         </Routes>

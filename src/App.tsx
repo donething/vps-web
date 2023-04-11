@@ -12,6 +12,7 @@ function App() {
 
       <Link to={"music"}><Button size={"large"}>Music</Button></Link>
       <Link to={"fserver"}><Button size={"large"}>FServer</Button></Link>
+      <Link to={"live"}><Button size={"large"}>Live</Button></Link>
       <Link to={"tgbot"}><Button size={"large"}>TGBot</Button></Link>
       {/*<Link to={"tasks"}><Button size={"large"}>Tasks</Button></Link>*/}
       {/*<Link to={"router"}><Button size={"large"}>Router</Button></Link>*/}
