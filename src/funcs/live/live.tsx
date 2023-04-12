@@ -107,7 +107,7 @@ const Live = React.memo(() => {
           label: "平台",
           options: [
             {title: "哔哩", value: "bili", tip: "主播的 UID，不是直播间号"},
-            {title: "抖音", value: "douyin", tip: "主播的 sec uid(在主页地址中，如'Wfd-rR...REs')，不是抖音号、UID"},
+            {title: "抖音", value: "douyin", tip: "主播的直播间号"},
             {title: "足迹", value: "zuji", tip: "主播的 ID"}
           ]
         }],
