@@ -106,12 +106,12 @@ const Live = React.memo(() => {
         optionsList: [{
           label: "平台",
           options: [
-            {title: "哔哩", value: "bili", tip: "主播的 UID，不是直播间号"},
-            {title: "抖音", value: "douyin", tip: "主播的直播间号"},
+            {title: "哔哩", value: "bili", tip: "主播的 UID"},
+            {title: "抖音", value: "douyin", tip: "主播的 直播间号"},
             {title: "足迹", value: "zuji", tip: "主播的 ID"}
           ]
         }],
-        placeholder: "主播的 ID、房间号",
+        placeholder: "悬浮选项，查看提示",
         size: "small"
       }
     )
