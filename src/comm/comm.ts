@@ -35,10 +35,10 @@ export const getJSON = async <T>(
 
   // 获取失败
   if (obj.code !== 0) {
-    console.log(`服务端响应码显示获取失败：`, obj.msg)
+    console.log(`服务端响应码显示执行失败：`, obj.msg)
     showSb && showSb({
       open: true,
-      message: `获取失败：${obj.msg}`,
+      message: `执行失败：${obj.msg}`,
       severity: "error",
       autoHideDuration: undefined
     })

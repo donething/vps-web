@@ -1,4 +1,5 @@
 import {
+  delRevoke, delRevokeArray,
   DoListAdd,
   DoLItemProps,
   DoOptionsInputProps,
@@ -14,6 +15,7 @@ import Stack from "@mui/material/Stack"
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined'
 import {getJSON} from "../../comm/comm"
 import {AnchorInfo, Plat, Sorts} from "./anchors"
+import Auth from "../../auth"
 
 // 样式
 const sxOneLine: SxProps<Theme> = {
@@ -27,21 +29,51 @@ const sxWidth300: SxProps<Theme> = {width: 350}
 // 排序规则
 const sortRules: Function[] = [Sorts.isMarked, Sorts.id]
 
+// 增加新主播
+const onAdd = async (id: string,
+                     plat: Plat,
+                     setInfos: React.Dispatch<React.SetStateAction<DoLItemProps[]>>,
+                     showSb: (ps: DoSnackbarProps) => void) => {
+  // 判断新项的数据是否完整
+  if (id === "") {
+    showSb({open: true, message: "无法添加主播：ID、房间号为空", severity: "info"})
+    return
+  }
+
+  // 添加新主播
+  const data = `plat=${plat}&id=${id}&operate=add`
+  const obj = await getJSON<AnchorInfo>("/api/live/anchor/operate", data, showSb)
+  if (!obj) {
+    return
+  }
+
+  // 获取信息详情以显示
+  let props = getAnchorInfo(obj.data, setInfos, showSb, true)
+  setInfos(oldArray => insertOrdered(oldArray, props, sortRules))
+}
+
 // 删除项目
 const handleDel = async (info: AnchorInfo,
                          showSb: (ps: DoSnackbarProps) => void,
                          setInfos: React.Dispatch<React.SetStateAction<DoLItemProps[]>>) => {
-  const data = `plat=${info.plat}&id=${info.id}&operate=del`
-  await getJSON("/api/live/anchor/operate", data, showSb)
+  await delRevoke(`主播【${info.name}】(${info.id})`, info, async () => {
+    const data = `plat=${info.plat}&id=${info.id}&operate=del`
+    const obj = await getJSON<null>("/api/live/anchor/operate", data, showSb)
 
-  setInfos(prev => {
-    const anchors = [...prev]
-    anchors.splice(anchors.findIndex(item => item.id === `${info.plat}_${info.id}`), 1)
-    return anchors
-  })
+    if (obj?.code !== 0) {
+      return Error(obj?.msg)
+    }
 
-  console.log(`已删除 主播【${info.name}】(${info.id})`)
-  showSb({open: true, message: `已删除 主播【${info.name}】`, severity: "success"})
+    setInfos(prev => {
+      const anchors = [...prev]
+      anchors.splice(anchors.findIndex(item => item.id === `${info.plat}_${info.id}`), 1)
+      return anchors
+    })
+    return undefined
+  }, async info => {
+    await onAdd(info.id, info.plat, setInfos, showSb)
+    return undefined
+  }, showSb)
 }
 
 // 获取某个主播的信息
@@ -77,32 +109,12 @@ const Live = React.memo(() => {
   // 显示消息
   const {showSb} = useSharedSnackbar()
 
-  // 增加新主播
-  const onAdd = React.useCallback(async (id: string, plat: Plat) => {
-    // 判断新项的数据是否完整
-    if (id === "") {
-      showSb({open: true, message: "无法添加主播：ID、房间号为空", severity: "info"})
-      return
-    }
-
-    // 添加新主播
-    const data = `plat=${plat}&id=${id}&operate=add`
-    const obj = await getJSON<AnchorInfo>("/api/live/anchor/operate", data, showSb)
-    if (!obj) {
-      return
-    }
-
-    // 获取信息详情以显示
-    let props = getAnchorInfo(obj.data, setInfos, showSb, true)
-    setInfos(oldArray => insertOrdered(oldArray, props, sortRules))
-  }, [showSb])
-
   // 添加面板的属性
   const inputProps: DoOptionsInputProps = React.useMemo(() => {
     return (
       {
         enterNode: "添加",
-        onEnter: (value, sList) => onAdd(value, sList[0] as Plat),
+        onEnter: (value, sList) => onAdd(value, sList[0] as Plat, setInfos, showSb),
         optionsList: [{
           label: "平台",
           options: [
@@ -137,7 +149,10 @@ const Live = React.memo(() => {
   }, [init])
 
   return (
-    <DoListAdd list={infos} title={"主播"} inputProps={inputProps} sx={sxWidth300}/>
+    <>
+      <Auth/>
+      <DoListAdd list={infos} title={"主播"} inputProps={inputProps} sx={sxWidth300}/>
+    </>
   )
 })
 
