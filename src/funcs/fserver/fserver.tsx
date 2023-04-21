@@ -243,6 +243,30 @@ const onSendTerabox = async (name: string, path: string, showSb: (ps: DoSnackbar
   showSb({open: true, message: `发送文件成功"${name}"`, severity: "success"})
 }
 
+const onSendVideoToTG = async (name: string, path: string, showSb: (ps: DoSnackbarProps) => void,) => {
+  showSb({open: true, message: `开始发送文件"${name}"`, severity: "info"})
+
+  let data = `path=${encodeURIComponent(path)}`
+  let obj = await getJSON<string>("/api/file/send/tg", data, showSb)
+  if (!obj) return
+
+  // 删除失败
+  if (obj.code !== 0) {
+    console.log(TAG, "发送文件失败：", obj.msg)
+    showSb({
+      open: true,
+      message: `发送文件失败：${obj.msg}`,
+      severity: "error",
+      autoHideDuration: undefined
+    })
+    return
+  }
+
+  // 已提交发送任务
+  console.log(TAG, obj.msg, name)
+  showSb({open: true, message: `${obj.msg}：${name}}`, severity: "success"})
+}
+
 // 文件列表项
 const FItem = React.memo((props: { file: FileInfo }) => {
   // 导航栏路径
@@ -268,8 +292,8 @@ const FItem = React.memo((props: { file: FileInfo }) => {
         />
       </ListItemButton>
 
-      <IconButton title={"上传到 Terabox 网盘"} onClick={() =>
-        onSendTerabox(props.file.name, `${paths.join("/")}/${props.file.name}`, showSb)}>
+      <IconButton title={"上传视频到 TG"} onClick={() =>
+        onSendVideoToTG(props.file.name, `${paths.join("/")}/${props.file.name}`, showSb)}>
         <CloudUploadOutlinedIcon opacity={0.5}/>
       </IconButton>
 
