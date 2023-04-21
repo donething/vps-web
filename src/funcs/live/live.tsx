@@ -1,5 +1,5 @@
 import {
-  delRevoke, delRevokeArray,
+  delRevoke,
   DoListAdd,
   DoLItemProps,
   DoOptionsInputProps,
@@ -15,7 +15,6 @@ import Stack from "@mui/material/Stack"
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined'
 import {getJSON} from "../../comm/comm"
 import {AnchorInfo, Plat, Sorts} from "./anchors"
-import Auth from "../../auth"
 
 // 样式
 const sxOneLine: SxProps<Theme> = {
@@ -127,7 +126,7 @@ const Live = React.memo(() => {
         size: "small"
       }
     )
-  }, [onAdd])
+  }, [showSb])
 
   const init = React.useCallback(async () => {
     // 获取主播列表及其信息
@@ -150,7 +149,6 @@ const Live = React.memo(() => {
 
   return (
     <>
-      <Auth/>
       <DoListAdd list={infos} title={"主播"} inputProps={inputProps} sx={sxWidth300}/>
     </>
   )

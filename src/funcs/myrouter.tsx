@@ -2,9 +2,8 @@ import React, {useEffect, useState} from "react"
 import {Button, Card, CardActions, CardContent, Stack, Typography} from "@mui/material"
 import {getJSON} from "../comm/comm"
 import {sha256} from "do-utils"
-import {LS_AUTH_KEY} from "./settings"
+import {LS_ROUTER_AUTH_KEY} from "./settings"
 import {useSharedSnackbar} from "do-comps"
-import Auth from "../auth"
 
 // 标签
 const TAG = "[MyRouter]"
@@ -50,8 +49,6 @@ const MyRouter = React.memo((): JSX.Element => {
 
   return (
     <Stack className={"main"} sx={{bgcolor: "background.paper"}}>
-      <Auth/>
-
       <Card sx={{width: "100%"}}>
         <CardContent>
           <Typography sx={{mb: 1.5}}>路由器信息</Typography>
@@ -66,7 +63,7 @@ const MyRouter = React.memo((): JSX.Element => {
 
         <CardActions>
           <Button size={"small"} disabled={ipInfo.ipv6.trim() === ""} onClick={async () => {
-            let auth = localStorage.getItem(LS_AUTH_KEY) || ""
+            let auth = localStorage.getItem(LS_ROUTER_AUTH_KEY) || ""
             let t = new Date().getTime()
             let s = await sha256(auth + t + auth)
             window.open(`http://[${ipInfo.ipv6}]:20220?t=${t}&s=${s}`, "_blank")

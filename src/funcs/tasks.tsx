@@ -3,7 +3,6 @@ import {Alert, Card, CardContent, IconButton, Stack, Typography} from "@mui/mate
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined'
 import {getJSON} from "../comm/comm"
 import {useSharedSnackbar} from "do-comps"
-import Auth from "../auth"
 
 // 图集下载状态
 type AlbumsStatusType = {
@@ -87,7 +86,6 @@ const Tasks = React.memo(() => {
 
   return (
     <Stack className={"main"} sx={{bgcolor: "background.paper", height: "100%", overflowY: "hidden"}}>
-      <Auth/>
       <AlbumsStatus/>
     </Stack>
   )

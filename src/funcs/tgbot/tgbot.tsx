@@ -13,7 +13,6 @@ import {
 import {useSharedSnackbar} from "do-comps"
 import {request} from "do-utils"
 import {JResult} from "../../comm/typedef"
-import Auth from "../../auth"
 import {InputInfo, SendResult, WebSite, WebSiteCType} from "./types"
 import KeyboardDoubleArrowRightOutlinedIcon from '@mui/icons-material/KeyboardDoubleArrowRightOutlined'
 import KeyboardDoubleArrowLeftOutlinedIcon from '@mui/icons-material/KeyboardDoubleArrowLeftOutlined'
@@ -258,7 +257,6 @@ const Sender = React.memo((): JSX.Element => {
 const TGBot = React.memo((): JSX.Element => {
   return (
     <Stack gap={2} padding={1} height={"100%"}>
-      <Auth/>
       <Sender/>
     </Stack>
   )

@@ -12,7 +12,6 @@ import React, {Fragment, useEffect, useState} from "react"
 import {getJSON} from "../../comm/comm"
 import {DoAutocomplete, DoList, useSharedSnackbar} from "do-comps"
 import {useBetween} from "use-between"
-import Auth from "../../auth"
 import {SInfo, SMData, Song} from "./types"
 
 // 标签
@@ -243,7 +242,6 @@ const Music = React.memo(() => {
 
   return (
     <Stack className={"main"} bgcolor={"background.paper"} height={"100%"}>
-      <Auth/>
       <Header/>
       <Content/>
     </Stack>

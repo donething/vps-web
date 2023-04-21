@@ -28,7 +28,6 @@ import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
 import {getJSON} from "../../comm/comm"
 import {DoSnackbarProps, DoDialogProps, useSharedSnackbar, useSharedDialog, DoFileUpload} from "do-comps"
-import Auth from "../../auth"
 import {FileInfo, UpStatusType} from "./types"
 import {sxBG, sxScroll} from "./sx"
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined'
@@ -386,7 +385,6 @@ const FServer = React.memo(() => {
 
   return (
     <Stack className={"main"} sx={sxBG}>
-      <Auth/>
       <Navbar/>
       <FList/>
       <DoFileUpload id={"UP_FILES"} apiURL={"/api/file/upload"} onUpload={handleUpload} onFinish={handleFinish}/>

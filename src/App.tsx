@@ -1,15 +1,12 @@
 import React from 'react'
 import {Link} from "react-router-dom"
 import {Button, Stack} from "@mui/material"
-import Auth from "./auth"
 
 // 首页
 function App() {
   return (
     <Stack alignItems={"center"} gap={4}
            sx={{width: "100%", height: "100%", bgcolor: "background.paper", paddingTop: 10}}>
-      <Auth/>
-
       <Link to={"music"}><Button size={"large"}>Music</Button></Link>
       <Link to={"fserver"}><Button size={"large"}>FServer</Button></Link>
       <Link to={"live"}><Button size={"large"}>Live</Button></Link>

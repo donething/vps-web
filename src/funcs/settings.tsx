@@ -10,7 +10,7 @@ const TAG = "[Settings]"
 // 访问首页的授权码，存储到 localStorage 的键
 export const LS_ACCESS_KEY = "access_key"
 // 操作路由器的授权码，存储到 localStorage 的键
-export const LS_AUTH_KEY = "auth_key"
+export const LS_ROUTER_AUTH_KEY = "router_auth_key"
 // Transmission 磁力下载地址，存储到 localStorage 的键
 export const LS_Trans_Port_KEY = "transmission_port"
 
@@ -32,7 +32,7 @@ const Settings = React.memo((): JSX.Element => {
     document.title = "设置选项"
 
     setAccess(localStorage.getItem(LS_ACCESS_KEY) || "")
-    setAuth(localStorage.getItem(LS_AUTH_KEY) || "")
+    setAuth(localStorage.getItem(LS_ROUTER_AUTH_KEY) || "")
     setTrans(localStorage.getItem(LS_Trans_Port_KEY) || "")
   }, [])
 
@@ -46,7 +46,7 @@ const Settings = React.memo((): JSX.Element => {
 
       <Button variant="contained" color="primary" onClick={async () => {
         localStorage.setItem(LS_ACCESS_KEY, access)
-        localStorage.setItem(LS_AUTH_KEY, auth)
+        localStorage.setItem(LS_ROUTER_AUTH_KEY, auth)
         localStorage.setItem(LS_Trans_Port_KEY, trans)
 
         console.log(TAG, "已保存设置，将跳转到之前的页面")
