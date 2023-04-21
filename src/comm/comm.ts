@@ -6,7 +6,7 @@ import {LS_ACCESS_KEY} from "../funcs/settings"
 // 执行网络请求，适配当前界面
 export const getJSON = async <T>(
   path: string,
-  data: string | object | FormData | undefined,
+  data?: string | object | FormData | undefined,
   showSb?: (ps: DoSnackbarProps) => void
 ): Promise<JResult<T> | undefined> => {
   let access = localStorage.getItem(LS_ACCESS_KEY) || ""

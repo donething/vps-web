@@ -11,11 +11,10 @@ import {
   TextField, Typography
 } from "@mui/material"
 import {useSharedSnackbar} from "do-comps"
-import {request} from "do-utils"
-import {JResult} from "../../comm/typedef"
 import {InputInfo, SendResult, WebSite, WebSiteCType} from "./types"
 import KeyboardDoubleArrowRightOutlinedIcon from '@mui/icons-material/KeyboardDoubleArrowRightOutlined'
 import KeyboardDoubleArrowLeftOutlinedIcon from '@mui/icons-material/KeyboardDoubleArrowLeftOutlined'
+import {getJSON} from "../../comm/comm"
 
 // 标签
 const TAG = "[TGBot]"
@@ -146,8 +145,11 @@ const Sender = React.memo((): JSX.Element => {
     const data = `ctype=${webSite[cType].cType}&content=${encodeURIComponent(content)}&` +
       `tags=${encodeURIComponent(tagsStr)}&extra=${encodeURIComponent(extra)}&still=${still}`
 
-    const resp = await request("/api/tgbot/send", data)
-    const json: JResult<SendResult[]> = await resp.json()
+    const json = await getJSON<SendResult[]>("/api/tgbot/send", data)
+    if (!json) {
+      return
+    }
+
     setWorking(false)
     setResult(json.data)
 
@@ -162,11 +164,8 @@ const Sender = React.memo((): JSX.Element => {
   }, [content, extra, still, tagObj, cType, reset, webSite, showSb])
 
   const init = React.useCallback(async () => {
-    const resp = await request("/api/tgbot/website")
-    const obj: JResult<WebSite> = await resp.json()
-    if (obj.code !== 0) {
-      console.log(TAG, "获取网站信息出错：", obj.msg)
-      showSb({open: true, severity: "error", message: "获取网站信息出错：" + obj.msg})
+    const obj = await getJSON<WebSite>("/api/tgbot/website")
+    if (!obj || obj.code !== 0) {
       return
     }
 
@@ -226,11 +225,10 @@ const Sender = React.memo((): JSX.Element => {
                          setTagVisible(false)
 
                          const data = `tags=${tagTmp}`
-                         const resp = await request("/api/tgbot/tags/edit", data)
-                         const obj: JResult<any> = await resp.json()
-                         if (obj.code !== 0) {
-                           console.log(TAG, "修改标签出错：", obj.msg)
-                           showSb({open: true, severity: "error", message: "修改标签出错：" + obj.msg})
+                         const obj = await getJSON("/api/tgbot/tags/edit", data)
+                         if (!obj || obj.code !== 0) {
+                           console.log(TAG, "修改标签出错：", obj?.msg)
+                           showSb({open: true, severity: "error", message: "修改标签出错：" + obj?.msg})
                            return
                          }
                        }}
