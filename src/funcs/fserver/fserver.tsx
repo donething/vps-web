@@ -264,7 +264,7 @@ const onSendVideoToTG = async (name: string, path: string, showSb: (ps: DoSnackb
 
   // 已提交发送任务
   console.log(TAG, obj.msg, name)
-  showSb({open: true, message: `${obj.msg}：${name}}`, severity: "success"})
+  showSb({open: true, message: `${obj.msg}：${name}}`, severity: "info"})
 }
 
 // 文件列表项
