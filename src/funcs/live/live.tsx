@@ -147,6 +147,10 @@ const Live = React.memo(() => {
     init()
   }, [init])
 
+  useEffect(() => {
+    document.title = "主播"
+  }, [])
+
   return (
     <>
       <DoListAdd list={infos} title={"主播"} inputProps={inputProps} sx={sxWidth300}/>
