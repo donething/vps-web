@@ -15,6 +15,7 @@ export type AnchorInfo = {
   isLive: boolean
   isCycle: boolean
   streamUrl: string
+  status: string
 }
 
 // 多条件排序函数

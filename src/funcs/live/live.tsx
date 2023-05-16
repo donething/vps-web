@@ -88,8 +88,12 @@ const getAnchorInfo = (info: AnchorInfo,
     isNewAdded: isNewAdded,
     primary: <Button color={"inherit"} href={info.webUrl} target="_blank"
                      sx={{padding: 0, margin: 0, ...sxOneLine}}>{info.name}</Button>,
-    secondary: <Typography title={info.title} className={"line-1"} marginTop={1} marginBottom={1}
-                           fontSize={"small"} component="span">{info.title}</Typography>,
+    secondary: <React.Fragment>
+      <Typography title={info.title} className={"line-1"} marginTop={1} marginBottom={1}
+                  fontSize={"small"} component="span">{info.title}</Typography>
+      <Typography title={info.status} className={"line-1"} marginTop={1} marginBottom={1}
+                  fontSize={"small"} component="span">{ info.status}</Typography>
+    </React.Fragment>,
     extra: (
       <Stack>
         <IconButton title={"删除"} onClick={_ => handleDel(info, showSb, setInfos)}>
