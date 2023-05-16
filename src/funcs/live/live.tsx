@@ -8,13 +8,14 @@ import {
 } from "do-comps"
 import React, {useEffect, useState} from "react"
 import Button from "@mui/material/Button"
-import {insertOrdered} from "do-utils"
 import type {SxProps, Theme} from "@mui/material"
 import {IconButton, Typography} from "@mui/material"
 import Stack from "@mui/material/Stack"
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined'
 import {getJSON} from "../../comm/comm"
 import {AnchorInfo, Plat, Sorts} from "./anchors"
+import {useBetween} from "use-between"
+import {insertOrdered} from "do-utils"
 
 // 样式
 const sxOneLine: SxProps<Theme> = {
@@ -28,10 +29,21 @@ const sxWidth300: SxProps<Theme> = {width: 350}
 // 排序规则
 const sortRules: Function[] = [Sorts.isMarked, Sorts.id]
 
+// 需要分享的值
+const useValues = () => {
+  // 获取的主播的信息列表
+  const [infos, setInfos] = useState<AnchorInfo[]>([])
+
+  return {infos, setInfos}
+}
+
+// 需要分享的值
+const useSharedValues = () => useBetween(useValues)
+
 // 增加新主播
 const onAdd = async (id: string,
                      plat: Plat,
-                     setInfos: React.Dispatch<React.SetStateAction<DoLItemProps[]>>,
+                     setInfos: React.Dispatch<React.SetStateAction<AnchorInfo[]>>,
                      showSb: (ps: DoSnackbarProps) => void) => {
   // 判断新项的数据是否完整
   if (id === "") {
@@ -46,15 +58,13 @@ const onAdd = async (id: string,
     return
   }
 
-  // 获取信息详情以显示
-  let props = getAnchorInfo(obj.data, setInfos, showSb, true)
-  setInfos(oldArray => insertOrdered(oldArray, props, sortRules))
+  setInfos(oldArray => [...oldArray, obj.data])
 }
 
 // 删除项目
 const handleDel = async (info: AnchorInfo,
                          showSb: (ps: DoSnackbarProps) => void,
-                         setInfos: React.Dispatch<React.SetStateAction<DoLItemProps[]>>) => {
+                         setInfos: React.Dispatch<React.SetStateAction<AnchorInfo[]>>) => {
   await delRevoke(`主播【${info.name}】(${info.id})`, info, async () => {
     const data = `plat=${info.plat}&id=${info.id}&operate=del`
     const obj = await getJSON<null>("/api/live/anchor/operate", data, showSb)
@@ -75,11 +85,24 @@ const handleDel = async (info: AnchorInfo,
   }, showSb)
 }
 
+const AnchorDespAndStatus = (props: { desp: string, status: string }) => {
+  return (
+    <React.Fragment>
+      <Typography title={props.desp} className={"line-1"} marginTop={1} marginBottom={1}
+                  fontSize={"small"} component="span">{props.desp}</Typography>
+      {
+        !!props.status && <Typography title={props.status} className={"line-1"} marginTop={1} marginBottom={1}
+                                      fontSize={"small"} component="span">{props.status}</Typography>
+      }
+    </React.Fragment>
+  )
+}
+
 // 获取某个主播的信息
-const getAnchorInfo = (info: AnchorInfo,
-                       setInfos: React.Dispatch<React.SetStateAction<DoLItemProps[]>>,
-                       showSb: (ps: DoSnackbarProps) => void,
-                       isNewAdded?: boolean): DoLItemProps => {
+const genAnchorInfoCompData = (info: AnchorInfo,
+                               setInfos: React.Dispatch<React.SetStateAction<AnchorInfo[]>>,
+                               showSb: (ps: DoSnackbarProps) => void,
+                               isNewAdded?: boolean): DoLItemProps => {
   return {
     id: `${info.plat}_${info.id}`,
     avatar: info.avatar,
@@ -88,14 +111,7 @@ const getAnchorInfo = (info: AnchorInfo,
     isNewAdded: isNewAdded,
     primary: <Button color={"inherit"} href={info.webUrl} target="_blank"
                      sx={{padding: 0, margin: 0, ...sxOneLine}}>{info.name}</Button>,
-    secondary: <React.Fragment>
-      <Typography title={info.title} className={"line-1"} marginTop={1} marginBottom={1}
-                  fontSize={"small"} component="span">{info.title}</Typography>
-      {
-        info.status && <Typography title={info.status} className={"line-1"} marginTop={1} marginBottom={1}
-                                   fontSize={"small"} component="span">{info.status}</Typography>
-      }
-    </React.Fragment>,
+    secondary: <AnchorDespAndStatus desp={info.title} status={info.status}/>,
     extra: (
       <Stack>
         <IconButton title={"删除"} onClick={_ => handleDel(info, showSb, setInfos)}>
@@ -108,12 +124,10 @@ const getAnchorInfo = (info: AnchorInfo,
 
 // 主播列表组件
 const Live = React.memo(() => {
-  // 主播信息，用于显示
-  const [infos, setInfos] = useState<DoLItemProps[]>([])
-
+  // 主播的信息
+  const {infos, setInfos} = useSharedValues()
   // 显示消息
   const {showSb} = useSharedSnackbar()
-
   // 添加面板的属性
   const inputProps: DoOptionsInputProps = React.useMemo(() => {
     return (
@@ -132,7 +146,18 @@ const Live = React.memo(() => {
         size: "small"
       }
     )
-  }, [showSb])
+  }, [showSb, setInfos])
+
+  // 主播信息，用于显示
+  const compInfos = React.useMemo(() => {
+    let cInfos: DoLItemProps[] = []
+    for (let info of infos) {
+      const data = genAnchorInfoCompData(info, setInfos, showSb)
+      cInfos = insertOrdered(cInfos, data, sortRules)
+    }
+
+    return cInfos
+  }, [infos, setInfos, showSb])
 
   const init = React.useCallback(async () => {
     // 获取主播列表及其信息
@@ -141,12 +166,32 @@ const Live = React.memo(() => {
       return
     }
 
-    const anchorsInfo = obj.data
-    // 获取状态并显示
-    setInfos([])
-    anchorsInfo.map(info => setInfos(oldArray =>
-      insertOrdered(oldArray, getAnchorInfo(info, setInfos, showSb), sortRules)))
-  }, [showSb])
+    setInfos(obj.data || [])
+  }, [setInfos, showSb])
+
+  // 获取录制状态
+  const getCapStatus = React.useCallback(async () => {
+    // 获取主播列表及其信息
+    let obj = await getJSON<{ [key: string]: string }>("/api/live/anchor/capture/status",
+      undefined, showSb)
+    if (!obj) {
+      return
+    }
+
+    setInfos(prev => {
+      const items = [...prev]
+      for (let item of items) {
+        const status = obj?.data[item.plat + "_" + item.id]
+        if (!status) {
+          continue
+        }
+
+        item.status = status
+      }
+      return items
+    })
+
+  }, [showSb, setInfos])
 
   useEffect(() => {
     // 初始化
@@ -154,12 +199,20 @@ const Live = React.memo(() => {
   }, [init])
 
   useEffect(() => {
+    const intervalId = setInterval(() => {
+      getCapStatus()
+    }, 1000)
+
+    return () => clearInterval(intervalId)
+  }, [getCapStatus])
+
+  useEffect(() => {
     document.title = "主播"
   }, [])
 
   return (
     <>
-      <DoListAdd list={infos} title={"主播"} inputProps={inputProps} sx={sxWidth300}/>
+      <DoListAdd list={compInfos} title={"主播"} inputProps={inputProps} sx={sxWidth300}/>
     </>
   )
 })
