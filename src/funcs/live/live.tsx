@@ -41,10 +41,10 @@ const useValues = () => {
 const useSharedValues = () => useBetween(useValues)
 
 // 增加新主播
-const onAdd = async (id: string,
-                     plat: Plat,
-                     setInfos: React.Dispatch<React.SetStateAction<AnchorInfo[]>>,
-                     showSb: (ps: DoSnackbarProps) => void) => {
+const handleAdd = async (id: string,
+                         plat: Plat,
+                         setInfos: React.Dispatch<React.SetStateAction<AnchorInfo[]>>,
+                         showSb: (ps: DoSnackbarProps) => void) => {
   // 判断新项的数据是否完整
   if (id === "") {
     showSb({open: true, message: "无法添加主播：ID、房间号为空", severity: "info"})
@@ -75,16 +75,23 @@ const handleDel = async (info: AnchorInfo,
 
     setInfos(prev => {
       const anchors = [...prev]
-      anchors.splice(anchors.findIndex(item => item.id === `${info.plat}_${info.id}`), 1)
+      const index = anchors.findIndex(item => item.id === info.id && item.plat === info.plat)
+      if (index == -1) {
+        console.log("删除主播失败，没有找到索引")
+        return prev
+      }
+
+      anchors.splice(index, 1)
       return anchors
     })
     return undefined
   }, async info => {
-    await onAdd(info.id, info.plat, setInfos, showSb)
+    await handleAdd(info.id, info.plat, setInfos, showSb)
     return undefined
   }, showSb)
 }
 
+// 主播的描述和录制状态的组件
 const AnchorDespAndStatus = (props: { desp: string, status: string }) => {
   return (
     <React.Fragment>
@@ -133,7 +140,7 @@ const Live = React.memo(() => {
     return (
       {
         enterNode: "添加",
-        onEnter: (value, sList) => onAdd(value, sList[0] as Plat, setInfos, showSb),
+        onEnter: (value, sList) => handleAdd(value, sList[0] as Plat, setInfos, showSb),
         optionsList: [{
           label: "平台",
           options: [
