@@ -91,8 +91,10 @@ const getAnchorInfo = (info: AnchorInfo,
     secondary: <React.Fragment>
       <Typography title={info.title} className={"line-1"} marginTop={1} marginBottom={1}
                   fontSize={"small"} component="span">{info.title}</Typography>
-      <Typography title={info.status} className={"line-1"} marginTop={1} marginBottom={1}
-                  fontSize={"small"} component="span">{ info.status}</Typography>
+      {
+        info.status && <Typography title={info.status} className={"line-1"} marginTop={1} marginBottom={1}
+                                   fontSize={"small"} component="span">{info.status}</Typography>
+      }
     </React.Fragment>,
     extra: (
       <Stack>
