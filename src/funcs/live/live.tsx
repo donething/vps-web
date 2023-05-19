@@ -178,6 +178,11 @@ const Live = React.memo(() => {
 
   // 获取录制状态
   const getCapStatus = React.useCallback(async () => {
+    // 获取到主播数据前，不需要获取录制状态
+    if (infos.length === 0) {
+      return
+    }
+
     // 获取主播列表及其信息
     let obj = await getJSON<{ [key: string]: string }>("/api/live/anchor/capture/status",
       undefined, showSb)
