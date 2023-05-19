@@ -203,7 +203,7 @@ const Live = React.memo(() => {
       return items
     })
 
-  }, [showSb, setInfos])
+  }, [infos, setInfos, showSb])
 
   useEffect(() => {
     // 初始化
