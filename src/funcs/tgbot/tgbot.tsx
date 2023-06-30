@@ -225,12 +225,7 @@ const Sender = React.memo((): JSX.Element => {
                          setTagVisible(false)
 
                          const data = `tags=${tagTmp}`
-                         const obj = await getJSON("/api/tgbot/tags/edit", data)
-                         if (!obj || obj.code !== 0) {
-                           console.log(TAG, "修改标签出错：", obj?.msg)
-                           showSb({open: true, severity: "error", message: "修改标签出错：" + obj?.msg})
-                           return
-                         }
+                         await getJSON("/api/tgbot/tags/edit", data)
                        }}
             />
           </Stack>

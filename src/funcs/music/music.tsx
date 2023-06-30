@@ -6,8 +6,8 @@ import {
   ListItem,
   ListItemText, Stack
 } from "@mui/material"
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined'
-import PlayCircleOutlineOutlinedIcon from '@mui/icons-material/PlayCircleOutlineOutlined'
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined"
+import PlayCircleOutlineOutlinedIcon from "@mui/icons-material/PlayCircleOutlineOutlined"
 import React, {Fragment, useEffect, useState} from "react"
 import {getJSON} from "../../comm/comm"
 import {DoAutocomplete, DoList, useSharedSnackbar} from "do-comps"
@@ -88,7 +88,7 @@ const Header = React.memo(() => {
 
   // 加载历史记录
   useEffect(() => {
-    setHistoryWords(JSON.parse(localStorage.getItem(LS_HIST_KEY) || '[]'))
+    setHistoryWords(JSON.parse(localStorage.getItem(LS_HIST_KEY) || "[]"))
   }, [])
 
   return (
@@ -171,7 +171,9 @@ const Content = React.memo(() => {
       encodeURIComponent(sInfo.keyword) + "&ops=" +
       encodeURIComponent(JSON.stringify(sInfo.ops))
     let obj = await getJSON<SMData>(path, undefined, showSb)
-    if (!obj) return
+    if (!obj || obj.code !== 0) {
+      return
+    }
 
     // 没有搜到匹配的歌曲
     if (!obj.data.payload || obj.data.payload.length === 0) {

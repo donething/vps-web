@@ -18,19 +18,19 @@ import {
 import React, {Fragment, useEffect, useState} from "react"
 import {useBetween} from "use-between"
 import {LS_ACCESS_KEY, LS_Trans_Port_KEY} from "../settings"
-import FolderOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
-import FileOutlinedIcon from '@mui/icons-material/FileOpenOutlined'
+import FolderOutlinedIcon from "@mui/icons-material/FolderOpenOutlined"
+import FileOutlinedIcon from "@mui/icons-material/FileOpenOutlined"
 import {ReactComponent as IconNginx} from "../../icons/nginx.svg"
 import {ReactComponent as IconLink} from "../../icons/link.svg"
 import {ReactComponent as IconMagnet} from "../../icons/magnet.svg"
-import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined'
-import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
+import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined"
+import CloudSyncOutlinedIcon from "@mui/icons-material/CloudSyncOutlined"
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
 import {getJSON} from "../../comm/comm"
 import {DoSnackbarProps, DoDialogProps, useSharedSnackbar, useSharedDialog, DoFileUpload} from "do-comps"
 import {FileInfo, UpStatusType} from "./types"
 import {sxBG, sxScroll} from "./sx"
-import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined'
+import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined"
 import {sha256} from "do-utils"
 
 // 标签
@@ -210,17 +210,7 @@ const onDelFile = (
 
       let data = `path=${encodeURIComponent(path)}`
       let obj = await getJSON<Array<FileInfo>>("/api/file/del", data, showSb)
-      if (!obj) return
-
-      // 删除失败
-      if (obj.code !== 0) {
-        console.log(TAG, "删除文件失败：", obj.msg)
-        showSb({
-          open: true,
-          message: `删除文件失败：${obj.msg}`,
-          severity: "error",
-          autoHideDuration: undefined
-        })
+      if (!obj || obj.code !== 0) {
         return
       }
 
@@ -237,17 +227,7 @@ const onSendTerabox = async (name: string, path: string, showSb: (ps: DoSnackbar
 
   let data = `path=${encodeURIComponent(path)}`
   let obj = await getJSON<string>("/api/file/send/terabox", data, showSb)
-  if (!obj) return
-
-  // 删除失败
-  if (obj.code !== 0) {
-    console.log(TAG, "发送文件到失败：", obj.msg)
-    showSb({
-      open: true,
-      message: `发送文件到失败：${obj.msg}`,
-      severity: "error",
-      autoHideDuration: undefined
-    })
+  if (!obj || obj.code !== 0) {
     return
   }
 
@@ -261,17 +241,7 @@ const onSendVideoToTG = async (name: string, path: string, showSb: (ps: DoSnackb
 
   let data = `path=${encodeURIComponent(path)}`
   let obj = await getJSON<string>("/api/file/send/tg", data, showSb)
-  if (!obj) return
-
-  // 删除失败
-  if (obj.code !== 0) {
-    console.log(TAG, "发送文件失败：", obj.msg)
-    showSb({
-      open: true,
-      message: `发送文件失败：${obj.msg}`,
-      severity: "error",
-      autoHideDuration: undefined
-    })
+  if (!obj || obj.code !== 0) {
     return
   }
 
@@ -331,22 +301,12 @@ const FList = React.memo(() => {
 
   // 获取
   const obtain = React.useCallback(async (dst: string[]) => {
-    let path = dst.join('/')
+    let path = dst.join("/")
     console.log(TAG, `读取路径 "${path}"`)
 
     path = `/api/file/list?path=${encodeURIComponent(path)}`
     let obj = await getJSON<FileInfo[]>(path, undefined, showSb)
-    if (!obj) return
-
-    // 获取失败
-    if (obj.code !== 0) {
-      console.log(TAG, "读取路径失败：", obj.msg)
-      showSb({
-        open: true,
-        message: `读取路径失败：${obj?.msg}`,
-        severity: "error",
-        autoHideDuration: undefined
-      })
+    if (!obj|| obj.code !== 0) {
       return
     }
 

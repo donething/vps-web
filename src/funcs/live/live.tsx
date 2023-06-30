@@ -55,7 +55,7 @@ const handleAdd = async (id: string,
   // 添加新主播
   const data = `plat=${plat}&id=${id}&operate=add`
   const obj = await getJSON<AnchorInfo>("/api/live/anchor/operate", data, showSb)
-  if (!obj) {
+  if (!obj || obj.code !== 0) {
     return
   }
 
@@ -189,7 +189,7 @@ const Live = React.memo(() => {
     // 获取主播列表及其信息
     let obj = await getJSON<Settings>("/api/live/settings/get",
       undefined, showSb)
-    if (!obj) {
+    if (!obj || obj.code !== 0) {
       return
     }
 
@@ -200,7 +200,7 @@ const Live = React.memo(() => {
     // 获取主播列表及其信息
     let obj = await getJSON<AnchorInfo[]>("/api/live/anchor/getinfo",
       undefined, showSb)
-    if (!obj) {
+    if (!obj || obj.code !== 0) {
       return
     }
 
@@ -217,7 +217,7 @@ const Live = React.memo(() => {
     // 获取主播列表及其信息
     let obj = await getJSON<{ [key: string]: string }>(
       "/api/live/anchor/capture/status", undefined, showSb)
-    if (!obj) {
+    if (!obj || obj.code !== 0) {
       return
     }
 
