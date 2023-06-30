@@ -52,6 +52,7 @@ export const getJSON = async <T>(
       severity: "error",
       autoHideDuration: undefined
     })
+
     return obj
   }
 

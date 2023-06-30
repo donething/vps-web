@@ -12,8 +12,8 @@ import {
 } from "@mui/material"
 import {useSharedSnackbar} from "do-comps"
 import {InputInfo, SendResult, WebSite, WebSiteCType} from "./types"
-import KeyboardDoubleArrowRightOutlinedIcon from '@mui/icons-material/KeyboardDoubleArrowRightOutlined'
-import KeyboardDoubleArrowLeftOutlinedIcon from '@mui/icons-material/KeyboardDoubleArrowLeftOutlined'
+import KeyboardDoubleArrowRightOutlinedIcon from "@mui/icons-material/KeyboardDoubleArrowRightOutlined"
+import KeyboardDoubleArrowLeftOutlinedIcon from "@mui/icons-material/KeyboardDoubleArrowLeftOutlined"
 import {getJSON} from "../../comm/comm"
 
 // 标签
@@ -170,7 +170,7 @@ const Sender = React.memo((): JSX.Element => {
     }
 
     setWebSite(obj.data)
-  }, [showSb])
+  }, [])
 
   React.useEffect(() => {
     init()

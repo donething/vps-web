@@ -9,13 +9,14 @@ import {
 import React, {useEffect, useState} from "react"
 import Button from "@mui/material/Button"
 import type {SxProps, Theme} from "@mui/material"
-import {IconButton, Typography} from "@mui/material"
+import {IconButton, Switch, Typography} from "@mui/material"
 import Stack from "@mui/material/Stack"
-import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined'
+import HighlightOffOutlinedIcon from "@mui/icons-material/HighlightOffOutlined"
 import {getJSON} from "../../comm/comm"
 import {AnchorInfo, Plat, Sorts} from "./anchors"
 import {useBetween} from "use-between"
 import {insertOrdered} from "do-utils"
+import {Settings, settingsDefault} from "./settings"
 
 // 样式
 const sxOneLine: SxProps<Theme> = {
@@ -76,7 +77,7 @@ const handleDel = async (info: AnchorInfo,
     setInfos(prev => {
       const anchors = [...prev]
       const index = anchors.findIndex(item => item.id === info.id && item.plat === info.plat)
-      if (index == -1) {
+      if (index === -1) {
         console.log("删除主播失败，没有找到索引")
         return prev
       }
@@ -131,10 +132,24 @@ const genAnchorInfoCompData = (info: AnchorInfo,
 
 // 主播列表组件
 const Live = React.memo(() => {
+  // 设置
+  const [settings, setSettings] = useState<Settings>(settingsDefault)
   // 主播的信息
   const {infos, setInfos} = useSharedValues()
   // 显示消息
   const {showSb} = useSharedSnackbar()
+
+  // 处理准许录制的开关事件
+  const handleSwEnable = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setSettings(prev => {
+      let newSettings = {...prev, disCap: event.target.checked}
+
+      getJSON<AnchorInfo[]>("/api/live/settings/set", newSettings, showSb)
+
+      return newSettings
+    })
+  }, [showSb])
+
   // 添加面板的属性
   const inputProps: DoOptionsInputProps = React.useMemo(() => {
     return (
@@ -166,9 +181,25 @@ const Live = React.memo(() => {
     return cInfos
   }, [infos, setInfos, showSb])
 
-  const init = React.useCallback(async () => {
+  const swEnable = React.useMemo(() => {
+    return <Switch title={"禁止录制直播（不会停止正在录制）"} checked={settings.disCap} onChange={handleSwEnable}/>
+  }, [settings.disCap, handleSwEnable])
+
+  const initGetSettings = React.useCallback(async () => {
     // 获取主播列表及其信息
-    let obj = await getJSON<AnchorInfo[]>("/api/live/anchor/getinfo", undefined, showSb)
+    let obj = await getJSON<Settings>("/api/live/settings/get",
+      undefined, showSb)
+    if (!obj) {
+      return
+    }
+
+    setSettings(obj.data)
+  }, [setSettings, showSb])
+
+  const initGetInfo = React.useCallback(async () => {
+    // 获取主播列表及其信息
+    let obj = await getJSON<AnchorInfo[]>("/api/live/anchor/getinfo",
+      undefined, showSb)
     if (!obj) {
       return
     }
@@ -184,8 +215,8 @@ const Live = React.memo(() => {
     }
 
     // 获取主播列表及其信息
-    let obj = await getJSON<{ [key: string]: string }>("/api/live/anchor/capture/status",
-      undefined, showSb)
+    let obj = await getJSON<{ [key: string]: string }>(
+      "/api/live/anchor/capture/status", undefined, showSb)
     if (!obj) {
       return
     }
@@ -207,8 +238,9 @@ const Live = React.memo(() => {
 
   useEffect(() => {
     // 初始化
-    init()
-  }, [init])
+    initGetSettings()
+    initGetInfo()
+  }, [initGetInfo, initGetSettings])
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -224,7 +256,7 @@ const Live = React.memo(() => {
 
   return (
     <>
-      <DoListAdd list={compInfos} title={"主播"} inputProps={inputProps} sx={sxWidth300}/>
+      <DoListAdd list={compInfos} title={"主播"} inputProps={inputProps} sx={sxWidth300} slot={swEnable}/>
     </>
   )
 })
