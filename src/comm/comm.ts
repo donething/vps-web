@@ -32,11 +32,11 @@ export const getJSON = async <T>(
     return undefined
   }
 
-  let obj: JResult<T> = await resp.json().catch(e => console.error(`解析响应为 JSON 对象时出错`, e))
+  let obj: JResult<T> = await resp.json().catch(e => console.error(`解析响应出错`, e, `当执行 "${path}" 时`))
   if (!obj) {
     showSb && showSb({
       open: true,
-      message: "解析响应为 JSON 对象时出错",
+      message: "解析响应出错",
       severity: "error",
       autoHideDuration: undefined
     })
