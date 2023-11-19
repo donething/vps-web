@@ -3893,10 +3893,10 @@ do-comps@^0.2.61:
   dependencies:
     use-between "^1.3.4"
 
-do-utils@^1.0.57:
-  version "1.0.57"
-  resolved "https://registry.yarnpkg.com/do-utils/-/do-utils-1.0.57.tgz#399b1229ab73e7963c9e72a227b107f8cfe5f526"
-  integrity sha512-gfBCs2Vc+KNKFkdxx/9zSF9mSM79EVbnjCFv9ys2NqCqXTC76/8DZrw4vB6ZMgOMYjPcvzYMsl/ZMFE+s7rnYA==
+do-utils@^1.0.71:
+  version "1.0.71"
+  resolved "https://registry.yarnpkg.com/do-utils/-/do-utils-1.0.71.tgz#135bfdcbdfdb6a52682372309147e9ba6358eef3"
+  integrity sha512-Su1zU3TUM42axMgFCYP+I8wsFQIzcVlvBZLQ1HhiRowNiaEVs+9/efXGfN/HdNxXQ0cTT3gkBiu6HzFfg0oLzA==
 
 doctrine@^2.1.0:
   version "2.1.0"
