@@ -10,7 +10,7 @@
     "@mui/icons-material": "^5.5.0",
     "@mui/material": "^5.5.0",
     "do-comps": "^0.2.61",
-    "do-utils": "^1.0.71",
+    "do-utils": "^1.0.76",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.2.2",
