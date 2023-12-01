@@ -17,7 +17,7 @@ import {
 } from "@mui/material"
 import React, {Fragment, useEffect, useState} from "react"
 import {useBetween} from "use-between"
-import {LS_ACCESS_KEY, LS_Trans_Port_KEY} from "../settings"
+import {LS_Trans_Port_KEY} from "../settings"
 import FolderOutlinedIcon from "@mui/icons-material/FolderOpenOutlined"
 import FileOutlinedIcon from "@mui/icons-material/FileOpenOutlined"
 import {ReactComponent as IconNginx} from "../../icons/nginx.svg"
@@ -26,12 +26,11 @@ import {ReactComponent as IconMagnet} from "../../icons/magnet.svg"
 import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined"
 import CloudSyncOutlinedIcon from "@mui/icons-material/CloudSyncOutlined"
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
-import {getJSON} from "../../comm/comm"
+import {getHeaders, getJSON} from "../../comm/comm"
 import {DoSnackbarProps, DoDialogProps, useSharedSnackbar, useSharedDialog, DoFileUpload} from "do-comps"
 import {FileInfo, UpStatusType} from "./types"
 import {sxBG, sxScroll} from "./sx"
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined"
-import {sha256} from "do-utils"
 
 // 标签
 const TAG = "[FServer]"
@@ -47,18 +46,13 @@ const useValues = () => {
   // 文件上传状态的信息列表
   const [filesStatus, setFilesStatus] = useState<UpStatusType[]>([])
 
-  // 生成验证，用于上传文件时拼接到URL中
-  const [authStr, setAuthStr] = useState("")
-
   return {
     paths,
     setPaths,
     fStatusOpen,
     setFStatusOpen,
     filesStatus,
-    setFilesStatus,
-    authStr,
-    setAuthStr
+    setFilesStatus
   }
 }
 
@@ -71,7 +65,7 @@ const Menus = React.memo(() => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
   // 共享 显示上传状态组件
-  const {setFStatusOpen, setAuthStr} = useSharedValues()
+  const {setFStatusOpen} = useSharedValues()
 
   // 点击了菜单弹出菜单列表
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -118,14 +112,7 @@ const Menus = React.memo(() => {
         <MenuItem sx={{gap: 2, color: "#555"}} onClick={() => handleClose("DL_Magnet")}>
           <SvgIcon component={IconMagnet} viewBox="0 0 1024 1024"/> 下载 磁力链接
         </MenuItem>
-        <MenuItem sx={{gap: 2, color: "#555"}} onClick={async () => {
-          let access = localStorage.getItem(LS_ACCESS_KEY) || ""
-          let t = new Date().getTime()
-          let s = await sha256(access + t + access)
-          setAuthStr(`t=${t}&s=${s}`)
-
-          await handleClose("UP_FILES")
-        }}>
+        <MenuItem sx={{gap: 2, color: "#555"}} onClick={() => handleClose("UP_FILES")}>
           <FileUploadOutlinedIcon/> 上传 文件
         </MenuItem>
         <MenuItem sx={{gap: 2, color: "#555"}} onClick={() => handleClose("UD_Progress")}>
@@ -306,7 +293,7 @@ const FList = React.memo(() => {
 
     path = `/api/file/list?path=${encodeURIComponent(path)}`
     let obj = await getJSON<FileInfo[]>(path, undefined, showSb)
-    if (!obj|| obj.code !== 0) {
+    if (!obj || obj.code !== 0) {
       return
     }
 
@@ -331,7 +318,7 @@ const FList = React.memo(() => {
 // 文件管理组件
 const FServer = React.memo(() => {
   // 文件上传状态
-  const {setPaths, filesStatus, setFilesStatus, authStr} = useSharedValues()
+  const {setPaths, filesStatus, setFilesStatus} = useSharedValues()
 
   // 共享 Snackbar
   const {showSb} = useSharedSnackbar()
@@ -384,7 +371,7 @@ const FServer = React.memo(() => {
     <Stack className={"main"} sx={sxBG}>
       <Navbar/>
       <FList/>
-      <DoFileUpload id={"UP_FILES"} apiURL={`/api/file/upload?${authStr}`} onUpload={handleUpload}
+      <DoFileUpload id={"UP_FILES"} apiURL={"/api/file/upload"} headers={getHeaders()} onUpload={handleUpload}
                     onFinish={handleFinish}/>
       <FilesStatus/>
     </Stack>

@@ -1,22 +1,17 @@
-import {request, sha256} from "do-utils"
+import {request} from "do-utils"
 import {JResult} from "./typedef"
 import {DoSnackbarProps} from "do-comps"
 import {LS_ACCESS_KEY} from "../funcs/settings"
 
-// 执行网络请求，适配当前界面
-export const getJSON = async <T>(
-  path: string,
-  data?: string | object | FormData | undefined,
-  showSb?: (ps: DoSnackbarProps) => void
-): Promise<JResult<T> | undefined> => {
+//  生成请求头（携带 Authorization）
+export const getHeaders = (): { [key: string]: string } => {
   let access = localStorage.getItem(LS_ACCESS_KEY) || ""
-  let t = new Date().getTime()
-  let headers = {
-    "t": t,
-    "s": await sha256(access + t + access)
-  }
+  return {"Authorization": "Bearer " + access}
+}
 
-  // @ts-ignore
+// 执行网络请求，适配当前界面
+export const getJSON = async <T>(path: string, data?: string | object | FormData | undefined, showSb?: (ps: DoSnackbarProps) => void): Promise<JResult<T> | undefined> => {
+  const headers = getHeaders()
   let resp = await request(path, data, {headers}).catch(e =>
     console.error(`执行网络请求 "${path}" 出错`, e)
   )
