@@ -10,7 +10,7 @@ export const getHeaders = (): { [key: string]: string } => {
 }
 
 // 执行网络请求，适配当前界面
-export const getJSON = async <T>(path: string, data?: string | object | FormData | undefined, showSb?: (ps: DoSnackbarProps) => void): Promise<JResult<T> | undefined> => {
+export const reqJSON = async <T>(path: string, data?: string | object | FormData | undefined, showSb?: (ps: DoSnackbarProps) => void): Promise<JResult<T> | undefined> => {
   const headers = getHeaders()
   let resp = await request(path, data, {headers}).catch(e =>
     console.error(`执行网络请求 "${path}" 出错`, e)

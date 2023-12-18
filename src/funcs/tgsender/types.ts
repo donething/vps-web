@@ -1,6 +1,6 @@
 // 网站的界面信息
 export type WebSite = {
-  fanhao: InputInfo
+  movie: InputInfo
   novel: InputInfo
 }
 
@@ -8,7 +8,6 @@ export type InputInfo = {
   cType: string
   cTypeName: string,
   inputLabel: string
-  tags: string
   bnText: string
 }
 

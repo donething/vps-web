@@ -26,7 +26,7 @@ import {ReactComponent as IconMagnet} from "../../icons/magnet.svg"
 import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined"
 import CloudSyncOutlinedIcon from "@mui/icons-material/CloudSyncOutlined"
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined"
-import {getHeaders, getJSON} from "../../comm/comm"
+import {getHeaders, reqJSON} from "../../comm/comm"
 import {DoSnackbarProps, DoDialogProps, useSharedSnackbar, useSharedDialog, DoFileUpload} from "do-comps"
 import {FileInfo, UpStatusType} from "./types"
 import {sxBG, sxScroll} from "./sx"
@@ -196,7 +196,7 @@ const onDelFile = (
       showDialog({open: false})
 
       let data = `path=${encodeURIComponent(path)}`
-      let obj = await getJSON<Array<FileInfo>>("/api/file/del", data, showSb)
+      let obj = await reqJSON<Array<FileInfo>>("/api/file/del", data, showSb)
       if (!obj || obj.code !== 0) {
         return
       }
@@ -213,7 +213,7 @@ const onSendTerabox = async (name: string, path: string, showSb: (ps: DoSnackbar
   showSb({open: true, message: `开始发送文件"${name}"`, severity: "info"})
 
   let data = `path=${encodeURIComponent(path)}`
-  let obj = await getJSON<string>("/api/file/send/terabox", data, showSb)
+  let obj = await reqJSON<string>("/api/file/send/terabox", data, showSb)
   if (!obj || obj.code !== 0) {
     return
   }
@@ -227,7 +227,7 @@ const onSendVideoToTG = async (name: string, path: string, showSb: (ps: DoSnackb
   showSb({open: true, message: `开始发送文件"${name}"`, severity: "info"})
 
   let data = `path=${encodeURIComponent(path)}`
-  let obj = await getJSON<string>("/api/file/send/tg", data, showSb)
+  let obj = await reqJSON<string>("/api/file/send/tg", data, showSb)
   if (!obj || obj.code !== 0) {
     return
   }
@@ -292,7 +292,7 @@ const FList = React.memo(() => {
     console.log(TAG, `读取路径 "${path}"`)
 
     path = `/api/file/list?path=${encodeURIComponent(path)}`
-    let obj = await getJSON<FileInfo[]>(path, undefined, showSb)
+    let obj = await reqJSON<FileInfo[]>(path, undefined, showSb)
     if (!obj || obj.code !== 0) {
       return
     }

@@ -12,7 +12,7 @@ import type {SxProps, Theme} from "@mui/material"
 import {IconButton, Switch, Typography} from "@mui/material"
 import Stack from "@mui/material/Stack"
 import HighlightOffOutlinedIcon from "@mui/icons-material/HighlightOffOutlined"
-import {getJSON} from "../../comm/comm"
+import {reqJSON} from "../../comm/comm"
 import {AnchorInfo, Plat, Sorts} from "./anchors"
 import {useBetween} from "use-between"
 import {insertOrdered} from "do-utils"
@@ -54,7 +54,7 @@ const handleAdd = async (id: string,
 
   // 添加新主播
   const data = `plat=${plat}&id=${id}&operate=add`
-  const obj = await getJSON<AnchorInfo>("/api/live/anchor/operate", data, showSb)
+  const obj = await reqJSON<AnchorInfo>("/api/live/anchor/operate", data, showSb)
   if (!obj || obj.code !== 0) {
     return
   }
@@ -68,7 +68,7 @@ const handleDel = async (info: AnchorInfo,
                          setInfos: React.Dispatch<React.SetStateAction<AnchorInfo[]>>) => {
   await delRevoke(`主播【${info.name}】(${info.id})`, info, async () => {
     const data = `plat=${info.plat}&id=${info.id}&operate=del`
-    const obj = await getJSON<null>("/api/live/anchor/operate", data, showSb)
+    const obj = await reqJSON<null>("/api/live/anchor/operate", data, showSb)
 
     if (obj?.code !== 0) {
       return Error(obj?.msg)
@@ -140,15 +140,14 @@ const Live = React.memo(() => {
   const {showSb} = useSharedSnackbar()
 
   // 处理准许录制的开关事件
-  const handleSwEnable = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSwEnable = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) =>
     setSettings(prev => {
-      let newSettings = {...prev, disCap: event.target.checked}
+      let newSettings: Settings = {...prev, DisCapture: event.target.checked}
 
-      getJSON<AnchorInfo[]>("/api/live/settings/set", newSettings, showSb)
+      reqJSON<AnchorInfo[]>("/api/live/settings/set", newSettings, showSb)
 
       return newSettings
-    })
-  }, [showSb])
+    }), [showSb])
 
   // 添加面板的属性
   const inputProps: DoOptionsInputProps = React.useMemo(() => {
@@ -182,13 +181,12 @@ const Live = React.memo(() => {
   }, [infos, setInfos, showSb])
 
   const swEnable = React.useMemo(() => {
-    return <Switch title={"禁止录制直播（不会停止正在录制）"} checked={settings.disCap} onChange={handleSwEnable}/>
-  }, [settings.disCap, handleSwEnable])
+    return <Switch title={"禁止录制直播(不会停止正在录制)"} checked={settings.DisCapture} onChange={handleSwEnable}/>
+  }, [settings.DisCapture, handleSwEnable])
 
   const initGetSettings = React.useCallback(async () => {
     // 获取主播列表及其信息
-    let obj = await getJSON<Settings>("/api/live/settings/get",
-      undefined, showSb)
+    let obj = await reqJSON<Settings>("/api/live/settings/get", undefined, showSb)
     if (!obj || obj.code !== 0) {
       return
     }
@@ -198,7 +196,7 @@ const Live = React.memo(() => {
 
   const initGetInfo = React.useCallback(async () => {
     // 获取主播列表及其信息
-    let obj = await getJSON<AnchorInfo[]>("/api/live/anchor/getinfo",
+    let obj = await reqJSON<AnchorInfo[]>("/api/live/anchor/getinfo",
       undefined, showSb)
     if (!obj || obj.code !== 0) {
       return
@@ -215,7 +213,7 @@ const Live = React.memo(() => {
     }
 
     // 获取主播列表及其信息
-    let obj = await getJSON<{ [key: string]: string }>(
+    let obj = await reqJSON<{ [key: string]: string }>(
       "/api/live/anchor/capture/status", undefined, showSb)
     if (!obj || obj.code !== 0) {
       return

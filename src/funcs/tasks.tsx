@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react"
 import {Alert, Card, CardContent, IconButton, Stack, Typography} from "@mui/material"
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined'
-import {getJSON} from "../comm/comm"
+import {reqJSON} from "../comm/comm"
 import {useSharedSnackbar} from "do-comps"
 
 // 图集下载状态
@@ -32,14 +32,14 @@ const AlbumsStatus = React.memo((): JSX.Element => {
 
   // 获取图集下载状态
   const init = React.useCallback(async () => {
-    let obj = await getJSON<{ [id: string]: AlbumsStatusType }>("/api/pics/dl/status",
+    let obj = await reqJSON<{ [id: string]: AlbumsStatusType }>("/api/pics/dl/status",
       undefined, showSb)
     if (obj?.code === 0) {
       setStatusMap(obj.data)
     }
 
     // 获取需要重试的图集数
-    let countObj = await getJSON<TotalCountInfo>("/api/pics/dl/count", undefined, showSb)
+    let countObj = await reqJSON<TotalCountInfo>("/api/pics/dl/count", undefined, showSb)
     if (countObj?.code === 0) {
       setTotalCountInfo(countObj.data)
     }

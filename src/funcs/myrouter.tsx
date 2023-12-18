@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react"
 import {Button, Card, CardActions, CardContent, Stack, Typography} from "@mui/material"
-import {getJSON} from "../comm/comm"
+import {reqJSON} from "../comm/comm"
 import {sha256} from "do-utils"
 import {LS_ROUTER_AUTH_KEY} from "./settings"
 import {useSharedSnackbar} from "do-comps"
@@ -30,7 +30,7 @@ const MyRouter = React.memo((): JSX.Element => {
   const init = React.useCallback(async () => {
     console.log(TAG, "读取路由器的信息...")
     // 路由器的公网 IP 信息
-    let ipInfoObj = await getJSON<IPInfo>("/api/router/ip/get", undefined, showSb)
+    let ipInfoObj = await reqJSON<IPInfo>("/api/router/ip/get", undefined, showSb)
     if (!ipInfoObj) {
       return
     }

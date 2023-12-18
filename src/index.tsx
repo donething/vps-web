@@ -17,7 +17,7 @@ import {ThemeProvider} from "@mui/material"
 import theme from "./mytheme"
 import Myrouter from "./funcs/myrouter"
 import {DoSnackbar, DoDialog} from "do-comps"
-import TGBot from "./funcs/tgbot/tgbot"
+import TGSender from "./funcs/tgsender/TGSender"
 import Live from "./funcs/live/live"
 
 const container = document.getElementById('root')
@@ -37,7 +37,7 @@ root.render(
           <Route path="/router" element={<Myrouter/>}/>
           <Route path="/settings" element={<Settings/>}/>
           <Route path="/tasks" element={<Tasks/>}/>
-          <Route path="/tgbot" element={<TGBot/>}/>
+          <Route path="/tgsender" element={<TGSender/>}/>
           <Route path="/live" element={<Live/>}/>
 
           <Route path="*" element={<App/>}/>

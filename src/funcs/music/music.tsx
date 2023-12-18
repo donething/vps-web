@@ -9,7 +9,7 @@ import {
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined"
 import PlayCircleOutlineOutlinedIcon from "@mui/icons-material/PlayCircleOutlineOutlined"
 import React, {Fragment, useEffect, useState} from "react"
-import {getJSON} from "../../comm/comm"
+import {reqJSON} from "../../comm/comm"
 import {DoAutocomplete, DoList, useSharedSnackbar} from "do-comps"
 import {useBetween} from "use-between"
 import {SInfo, SMData, Song} from "./types"
@@ -170,7 +170,7 @@ const Content = React.memo(() => {
     let path = "/api/music/search?page=" + sInfo.page + "&keyword=" +
       encodeURIComponent(sInfo.keyword) + "&ops=" +
       encodeURIComponent(JSON.stringify(sInfo.ops))
-    let obj = await getJSON<SMData>(path, undefined, showSb)
+    let obj = await reqJSON<SMData>(path, undefined, showSb)
     if (!obj || obj.code !== 0) {
       return
     }
