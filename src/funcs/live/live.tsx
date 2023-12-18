@@ -66,8 +66,8 @@ const handleAdd = async (id: string,
 const handleDel = async (info: AnchorInfo,
                          showSb: (ps: DoSnackbarProps) => void,
                          setInfos: React.Dispatch<React.SetStateAction<AnchorInfo[]>>) => {
-  await delRevoke(`主播【${info.name}】(${info.id})`, info, async () => {
-    const data = `plat=${info.plat}&id=${info.id}&operate=del`
+  await delRevoke(`主播【${info.name}】(${info.uid})`, info, async () => {
+    const data = `plat=${info.plat}&id=${info.uid}&operate=del`
     const obj = await reqJSON<null>("/api/live/anchor/operate", data, showSb)
 
     if (obj?.code !== 0) {
@@ -76,7 +76,7 @@ const handleDel = async (info: AnchorInfo,
 
     setInfos(prev => {
       const anchors = [...prev]
-      const index = anchors.findIndex(item => item.id === info.id && item.plat === info.plat)
+      const index = anchors.findIndex(item => item.uid === info.uid && item.plat === info.plat)
       if (index === -1) {
         console.log("删除主播失败，没有找到索引")
         return prev
@@ -87,7 +87,7 @@ const handleDel = async (info: AnchorInfo,
     })
     return undefined
   }, async info => {
-    await handleAdd(info.id, info.plat, setInfos, showSb)
+    await handleAdd(info.uid, info.plat, setInfos, showSb)
     return undefined
   }, showSb)
 }
@@ -99,8 +99,8 @@ const AnchorDespAndStatus = (props: { desp: string, status: string }) => {
       <Typography title={props.desp} className={"line-1"} marginTop={1} marginBottom={1}
                   fontSize={"small"} component="span">{props.desp}</Typography>
       {
-        !!props.status && <Typography title={props.status} className={"line-1"} marginTop={1} marginBottom={1}
-                                      fontSize={"small"} component="span">{props.status}</Typography>
+        <Typography title={props.status} className={"line-1"} marginTop={1} marginBottom={1}
+                    fontSize={"small"} component="span">{props.status ? props.status : "正在获取…"}</Typography>
       }
     </React.Fragment>
   )
@@ -112,7 +112,7 @@ const genAnchorInfoCompData = (info: AnchorInfo,
                                showSb: (ps: DoSnackbarProps) => void,
                                isNewAdded?: boolean): DoLItemProps => {
   return {
-    id: `${info.plat}_${info.id}`,
+    id: `${info.plat}_${info.uid}`,
     avatar: info.avatar,
     divider: true,
     isMarked: info.isLive,
@@ -222,7 +222,7 @@ const Live = React.memo(() => {
     setInfos(prev => {
       const items = [...prev]
       for (let item of items) {
-        const status = obj?.data[item.plat + "_" + item.id]
+        const status = obj?.data[item.plat + "_" + item.uid]
         if (!status) {
           continue
         }

@@ -5,7 +5,7 @@ export type Plat = "bili" | "douyin" | "zuji"
 
 // 主播的状态信息（需联网获取）
 export type AnchorInfo = {
-  id: string
+  uid: string
   plat: Plat
   avatar: string
   name: string
